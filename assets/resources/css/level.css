@@ -1,0 +1,65 @@
+#level1 {
+	background: url('../images/27.jpg') repeat;
+}
+
+#top, #middle, #bottom{
+	position: absolute;
+}
+
+#top {
+	top: 0px;
+	height: 50px;
+	left: 0px;
+	width: 100%;
+}
+
+#middle {
+	top: 50px;
+	bottom: 50px;
+	left: 0px;
+	width: 100%;
+}
+
+#bottom {
+	height: 50px;
+	left: 0px;
+	bottom: 0px;
+	width: 100%;
+}
+
+#mazeWrapper {
+	position: relative;
+}
+
+.token{ position: absolute; }
+.token.pep-active{ 
+	-webkit-transform: scale(2);
+	-ms-transform: scale(2);
+	transform: scale(2);
+}
+
+.case {
+	position: absolute;
+	background-size: 100%;
+}
+
+.w11101111 {background-image: url('../images/11101111.png');}
+.w11111110 {background-image: url('../images/11111110.png');}
+.w11101110 {background-image: url('../images/11101110.png');}
+
+[path]:before {
+	position: absolute;
+	content: '';
+	opacity: 0.5;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
+
+[path=s]:before {
+	background: green;
+}
+
+[path=i]:before {
+	background: red;
+}

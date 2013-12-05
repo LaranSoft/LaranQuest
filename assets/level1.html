@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html" charset="UTF-8">
+		<meta name="viewport" content="height=device-height, width=device-width, user-scalable=no">
+	</head>
+	<body>
+		<div data-role="page" id="level1">
+			<div id="top"></div>
+			<div id="middle"></div>
+			<div id="bottom"></div>
+			<script>
+				$('#level1').on('pageshow', function() {
+					var scriptUrl = "resources/js/test.js";
+					var head = document.getElementsByTagName('head')[0];
+					script = document.createElement('script');
+					script.type = 'text/javascript';
+					script.src = scriptUrl;
+					script.onload = function() { mazeRenderer.render($('#middle'), maze); };
+					script.onerror = function(e) { $('#top').html('dho'); };
+					head.appendChild(script);
+				});
+			</script>
+		</div>
+		
+		
+	</body>
+</html>
