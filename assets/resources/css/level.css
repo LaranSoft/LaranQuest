@@ -2,7 +2,10 @@
 	background: url('../images/27.jpg') repeat;
 }
 
-#top, #middle, #bottom{
+.absolute {position: absolute;}
+.hidden {visibility: hidden;}
+
+#top, #middle, #bottom, #levelStatus{
 	position: absolute;
 }
 
@@ -11,6 +14,35 @@
 	height: 50px;
 	left: 0px;
 	width: 100%;
+}
+
+#levelStatus {
+	top: 5px;
+	left: 5px;
+	height: 100%;
+	right: 5px;
+	background-color: rgba(0, 0, 0, 0.7);
+}
+
+#star1, #star2, #star3 {
+	background: url('../images/starVoid.png');
+	background-size: 40px 40px;
+	width: 40px;
+	height: 40px;
+	top: 5px;
+}
+
+#star1 {right: 5px;}
+#star2 {right: 50px;}
+#star3 {right: 95px;}
+
+#remainingMovements {
+	color: white;
+	font-size: 48px;
+	left: 5px;
+	width: 45px;
+	height: 45px;
+	background: url('../images/starVoid.png');
 }
 
 #middle {
@@ -33,33 +65,16 @@
 
 .token{ position: absolute; }
 .token.pep-active{ 
-	-webkit-transform: scale(2);
-	-ms-transform: scale(2);
-	transform: scale(2);
 }
 
 .case {
 	position: absolute;
 	background-size: 100%;
+	border-left: white;
+	border-right: black;
 }
 
-.w11101111 {background-image: url('../images/11101111.png');}
-.w11111110 {background-image: url('../images/11111110.png');}
-.w11101110 {background-image: url('../images/11101110.png');}
+.w01000100 {background-image: url('../images/01000100.png');}
+.w01111100 {background-image: url('../images/01111100.png');}
+.w11000111 {background-image: url('../images/11000111.png');}
 
-[path]:before {
-	position: absolute;
-	content: '';
-	opacity: 0.5;
-	width: 100%;
-	height: 100%;
-	pointer-events: none;
-}
-
-[path=s]:before {
-	background: green;
-}
-
-[path=i]:before {
-	background: red;
-}
