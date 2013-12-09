@@ -32,9 +32,13 @@
 	top: 5px;
 }
 
-#star1 {right: 5px;}
+#star1.taken, #star2.taken, #star3.taken {
+	background-image: url('../images/exp.png');
+}
+
+#star1 {right: 95px;}
 #star2 {right: 50px;}
-#star3 {right: 95px;}
+#star3 {right: 5px;}
 
 #remainingMovements {
 	color: white;
@@ -72,6 +76,18 @@
 	background-size: 100%;
 	border-left: white;
 	border-right: black;
+}
+
+.token.exp {
+  -transition: all 0.6s;
+  -webkit-transition: all 0.6s;
+}
+.token.exp.animated {
+  -transform: scale(3);
+  -webkit-transform: scale(3);
+  -ms-transform: scale(3);
+  opacity: 0;
+  z-index: 100;
 }
 
 .w01000100 {background-image: url('../images/01000100.png');}

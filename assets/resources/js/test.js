@@ -1,117 +1,8 @@
-function Space(position, walls, adiacents, types){
-	
-	var self = this;
-	
-	var repaint = function($space){
-		var pathValidity = $space.attr('pathValidity');
-		pathValidity = pathValidity || 'ok';
-		var pathType = $space.attr('pathType');
-		pathType = pathType || '';
-		var pathDirection1 = $space.attr('pathDirection1');
-		pathDirection1 = pathDirection1 || ''; 
-		var pathDirection2 = $space.attr('pathDirection2');
-		pathDirection2 = pathDirection2 || '';
-		var spaceWalls = $space.attr('spaceWalls');
-		var imagePath = pathValidity + pathType + pathDirection1 + pathDirection2;
-		console.log(imagePath + '.png');
-		if(imagePath != 'ok'){
-			imagePath = 'url(file:///android_asset/resources/images/' + imagePath + '.png), ';
-		} else imagePath = '';
-		$space.css({'background-image': imagePath + 'url(file:///android_asset/resources/images/' + spaceWalls + '.png)'});
-	};
+//#SWITCH#var contextPath = 'file:///android_asset';
+var contextPath = './';
 
-	this.simulatedStart = false;
-	this.position = position;
-	this.walls = walls;
-	this.adiacents = adiacents;
-	this.types = types;
-	
-	this.$el;
-	this.enteringDirection = -1;
-	
-	this.setDOMSpaceElement = function($el){
-		self.$el = $el;
-		self.$el.attr('spaceWalls', self.walls);
-	};
-	
-	//0: sono entrato dal basso
-	//1: sono entrato da sinistra
-	//2: sono entrato dall'alto
-	//3: sono entrato da destra
-	this.onSimulatedEnter = function(direction){
-		var retVal = {canEnter: true};
-		if(self.enteringDirection == -1 && !self.simulatedStart){
-			self.enteringDirection = direction;
-			self.$el.attr('pathDirection1', direction+1);
-			repaint(self.$el);
-		}
-		return retVal;
-	};
-	
-	//0: sto andando verso l'alto
-	//1: sto andando verso destra
-	//2: sto andando verso il basso
-	//3: sto andando verso sinistra
-	this.onSimulatedExit = function(direction){
-	    var retVal = {canExit: true};
-		// controllo se sto uscendo dalla stessa direzione da cui sono entrato
-		if(!self.simulatedStart && (self.enteringDirection - direction) % 2 == 0 && self.enteringDirection != direction){
-		    self.$el.removeAttr('pathType pathValidity pathDirection1 pathDirection2');
-			self.enteringDirection = -1;
-		} else {
-			self.$el.attr('pathDirection2', direction+1);
-		}
-		repaint(self.$el);
-		return retVal;
-	};
-	
-	this.startSimulation = function(){
-		self.simulatedStart = true;
-		self.$el.attr('pathType', 's');
-		self.$el.attr('pathValidity', 'ok');
-	};
-	
-	this.onSimulatedEnd = function(){
-		self.$el.removeAttr('pathType pathValidity pathDirection1 pathDirection2');
-		if(self.simulatedStart == true){
-			repaint(self.$el);
-		}
-		self.simulatedStart = false;
-		self.enteringDirection = -1;
-	};
-	
-	this.setSimulationInvalid = function(){
-		var pathValidity = self.$el.attr('pathValidity');
-		if(pathValidity != 'ko'){
-			self.$el.attr('pathValidity', 'ko');
-			repaint(self.$el);
-		}
-	};
-	
-	this.setSimulationValid = function(){
-		var pathValidity = self.$el.attr('pathValidity');
-		if(pathValidity != 'ok'){
-			self.$el.attr('pathValidity', 'ok');
-			repaint(self.$el);
-		}
-	};
-	
-	this.onEnter = function(maze, path, index, duration){
-		self.$el.removeAttr('pathType pathValidity pathDirection1 pathDirection2');
-		repaint(self.$el);
-		if(path[index+1]){
-			setTimeout(function(){
-				self.onExit(maze, path, index, duration);
-			}, duration);
-		}
-	};
-	
-	this.onExit = function(maze, path, index, duration){
-		setTimeout(function(){
-			maze[path[index+1]].onEnter(maze, path, index+1, duration);
-		}, duration);
-	};
-};
+//#SWITCH#var isMobile = true;
+var isMobile = false;
 
 var maze = {
 	character: 'warrior',
@@ -120,9 +11,9 @@ var maze = {
 	size: [1, 6],
 	'1': new Space([0, 0], '11000111', [0, 2, 0, 0]),
 	'2': new Space([0, 1], '01000100', [0, 3, 0, 1]),
-	'3': new Space([0, 2], '01000100', [0, 4, 0, 2], ['exp']),
-	'4': new Space([0, 3], '01000100', [0, 5, 0, 3], ['exp']),
-	'5': new Space([0, 4], '01000100', [0, 6, 0, 4], ['exp']),
+	'3': new Space([0, 2], '01000100', [0, 4, 0, 2], ['exp'], {onEnter: function(space){addStar(); space.$el.exp.transition({'scale': 3, 'opacity': 0, 'z-index': 100}, 1000, function(){space.$el.exp.remove();})}}),
+	'4': new Space([0, 3], '01000100', [0, 5, 0, 3], ['exp'], {onEnter: function(space){addStar(); space.$el.exp.transition({'scale': 3, 'opacity': 0, 'z-index': 100}, 1000, function(){space.$el.exp.remove();})}}),
+	'5': new Space([0, 4], '01000100', [0, 6, 0, 4], ['exp'], {onEnter: function(space){addStar(); space.$el.exp.transition({'scale': 3, 'opacity': 0, 'z-index': 100}, 1000, function(){space.$el.exp.remove();})}}),
 	'6': new Space([0, 5], '01111100', [0, 0, 0, 5]),
 	positions: {
 		'0-0': 1,
@@ -205,6 +96,12 @@ var maze = {
 	}
 };
 
+var starIndex = 0;
+var addStar = function(){
+	starIndex++;
+	$('#star' + starIndex).addClass('taken');
+}
+
 var mazeRenderer = {
 	render: function(container, maze){
 
@@ -273,7 +170,8 @@ var mazeRenderer = {
 						case 'exp': {
 							var tokenTop = caseTop + (caseSize * (1 - expTokenPadding) / 2);
 							var tokenLeft = caseLeft + (caseSize * (1 - expTokenPadding) / 2);
-							mazeWrapper.append($('<img class="token" src="resources/images/exp.png" style="width: ' + (caseSize*expTokenPadding) + 'px; height: ' + (caseSize*expTokenPadding) + 'px; top: ' + tokenTop + 'px; left: ' + tokenLeft + 'px;"/>'));
+							cas.exp = $('<img class="token exp" src="resources/images/exp.png" style="width: ' + (caseSize*expTokenPadding) + 'px; height: ' + (caseSize*expTokenPadding) + 'px; top: ' + tokenTop + 'px; left: ' + tokenLeft + 'px;"/>');
+							mazeWrapper.append(cas.exp);
 						}
 					}
 				}
@@ -307,7 +205,7 @@ var mazeRenderer = {
 			shouldEase: false,
 			useCSSTranslation: false,
 			forceNonCSS3Movement: true,
-			manageTouchOnlyEvents: true,
+			manageTouchOnlyEvents: isMobile,
 			cssEaseDuration: 0,
 			velocityMultiplier: 0,
 			allowDragEventPropagation: false,
@@ -326,17 +224,19 @@ var mazeRenderer = {
 			},
 			drag: function(event){
 				// manage only effective touches event
-				if(event.originalEvent.targetTouches && event.originalEvent.targetTouches.length == 1){
+				//#SWITCH#if(event.originalEvent.targetTouches && event.originalEvent.targetTouches.length == 1){
+				if(true){
 					
 					// get the x and y coordinates of the event
-					var clientX = event.originalEvent.targetTouches[0].pageX;
-					var clientY = event.originalEvent.targetTouches[0].pageY;
-					
+					//#SWITCH#var clientX = event.originalEvent.targetTouches[0].pageX;
+					var clientX = event.pageX;
+					//#SWITCH#var clientY = event.originalEvent.targetTouches[0].pageY;
+					var clientY = event.pageY;
 					
 					// verify if the user is in the maze area
 					if(mazeOffset.left > clientX || clientX > mazeOffset.right || mazeOffset.top > clientY || clientY > mazeOffset.bottom){
 						
-						console.log('out of maze: clientX:' + clientX + ' clientY:' + clientY);
+						//#LOG#console.log('out of maze: clientX:' + clientX + ' clientY:' + clientY);
 						
 						// the user is out of the maze area
 						actualDragPosition = 0;
@@ -362,14 +262,14 @@ var mazeRenderer = {
 								for(var i=0; i<localPath.length; i++){
 									var enteringDirection = localPath[i] - 1;
 									
-									console.log('exiting from ' + lastValidDragPosition + ', direction: ' + enteringDirection);
+									//#LOG#console.log('exiting from ' + lastValidDragPosition + ', direction: ' + enteringDirection);
 									
 									var step = maze[lastValidDragPosition].onSimulatedExit(enteringDirection);
 									if(step.canExit == true){
 										
 										targetPosition = maze[lastValidDragPosition].adiacents[enteringDirection];
 										
-										console.log('entering in ' + targetPosition + ', direction: ' + enteringDirection);
+										//#LOG#console.log('entering in ' + targetPosition + ', direction: ' + enteringDirection);
 										step = maze[targetPosition].onSimulatedEnter(enteringDirection);
 										
 										if(step.canEnter == true){
@@ -386,6 +286,12 @@ var mazeRenderer = {
 										}
 									}
 								}
+							}
+						} else {
+							// the user is over the same space over which was the last time
+							// in this case we need an update only if the path was invalid
+							if(actualDragPosition == 0) {
+								actualDragPosition = lastValidDragPosition;
 							}
 						}
 					}
