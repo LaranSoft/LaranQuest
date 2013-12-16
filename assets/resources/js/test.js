@@ -35,8 +35,8 @@ var maze = {
 		// this variable hold the return value
 		var path = [];
 		
-		var xMovement = dCoord[0] > 0 ? 3 : 1;
-		var yMovement = dCoord[1] > 0 ? 2 : 4;
+		var xMovement = dCoord[0] > 0 ? 2 : 0;
+		var yMovement = dCoord[1] > 0 ? 1 : 3;
 		
 		var baseX = Math.abs(dCoord[0]);
 		var baseY = Math.abs(dCoord[1]);
@@ -94,6 +94,15 @@ var maze = {
 		}
 		
 		return path;
+	}
+};
+
+var MAZE_UTIL = {
+	getDirection: function(maze, start, end){
+		return maze[start].adiacents.indexOf(end);
+	},
+	getPosition: function(maze, start, direction){
+		return maze[start].adiacents[direction];
 	}
 };
 
@@ -193,10 +202,16 @@ var completeLevel = function(){
 	});
 };
 
+var MAZE_STATUS = {
+	position: maze.start
+};
+var MAZE_STATUS_CLONED;
+var MOVEMENT_DESCRIPTOR;
+
 var mazeRenderer = {
 	render: function(container, maze){
 
-		// calcolo le dimensioni della singola casella. La dimensione è il massimo numero intero per cui
+		// calcolo le dimensioni della singola casella. La dimensione ï¿½ il massimo numero intero per cui
 		// il container contiene il labirinto, considerando un padding di 5px
 		var caseSize = 0;
 		
@@ -301,7 +316,6 @@ var mazeRenderer = {
 		
 		console.log(JSON.stringify(mazeOffset));
 		
-		var path = [];
 		//var remainingMovements = 5;
 		
 		token.pep({
@@ -313,16 +327,25 @@ var mazeRenderer = {
 			velocityMultiplier: 0,
 			allowDragEventPropagation: false,
 			initiate: function(){
-				var start = maze[actualPosition].startSimulation();
-				path = [actualPosition];
-				lastValidDragPosition = actualPosition;
-				actualDragPosition = actualPosition;
-				isSimulationValid = true;
+				
+				MAZE_STATUS_CLONED = $.extend(true, {}, MAZE_STATUS);
+				
+				MOVEMENT_DESCRIPTOR = {
+					startingPosition: MAZE_STATUS_CLONED.position,
+					pathValidity: true,
+					path: []
+				};
+				MOVEMENT_DESCRIPTOR.actualPosition = MOVEMENT_DESCRIPTOR.startingPosition;
+				MOVEMENT_DESCRIPTOR.path.push(MOVEMENT_DESCRIPTOR.startingPosition);
+				
+				pathRenderer.render(MOVEMENT_DESCRIPTOR.path, maze, mazeWrapper, caseSize);
+				
 				token.css({
 					'height': '+=' + (1.5*caseSize*characterTokenPadding),
 					'width': '+=' + (1.5*caseSize*characterTokenPadding),
 					'top': '-=' + (0.75*caseSize*characterTokenPadding),
 					'left': '-=' + (0.75*caseSize*characterTokenPadding),
+					'z-index': '100',
 					opacity: 0.7
 				});
 			},
@@ -335,18 +358,23 @@ var mazeRenderer = {
 					var clientX = clientCoord.x;
 					var clientY = clientCoord.y;
 					
+					// only 5 possibilities:
+					// 1) we are out of Maze Area
+					// 2) we are in the Maze Area, but not over a space
+					// 3) we are in the Maze Area, over a space that already is in the path
+					// 4) we are in the Maze Area, over a space that isn't in the path and isn't reachable by actual position
+					// 5) we are in the Maze Area, over a space that isn't in the path and is reachable by actual position 
+					
 					// verify if the user is in the maze area
 					if(mazeOffset.left > clientX || clientX > mazeOffset.right || mazeOffset.top > clientY || clientY > mazeOffset.bottom){
-						
 						//#LOG#console.log('out of maze: clientX:' + clientX + ' clientY:' + clientY);
 						
-						// the user is out of the maze area
-						actualDragPosition = 0;
-						
+						// case 1) 
+						// the path is flagged as invalid
+						MOVEMENT_DESCRIPTOR.pathValidity = false;
 					} else {
-						// the user is in the maze area.
-						// But this doesn't mean that he is over a space
-						// so let's calculate the actual row and column coordinates (0 based)
+						
+						// calculate the actual row and column coordinates (0 based)
 						var col = Math.floor((clientX - mazeOffset.left) / caseSize);
 						var row = Math.floor((clientY - mazeOffset.top) / caseSize);
 						
@@ -354,67 +382,96 @@ var mazeRenderer = {
 						var targetPosition = maze.positions[row + '-' + col];
 						
 						// verify if the user is over a space
-						if(targetPosition){
+						if(!targetPosition){
 							
-							// verify if the overed space different from the space over which was the last time
-							if(targetPosition != lastValidDragPosition){
+							// case 2) 
+							// the path is flagged as invalid
+							MOVEMENT_DESCRIPTOR.pathValidity = false;
+						} else {
+							
+							// verify if the overed space is already in the path
+							var pathIndexOfTargetPosition = MOVEMENT_DESCRIPTOR.path.indexOf(targetPosition);
+							if(pathIndexOfTargetPosition != -1){
+								
+								// case 3)
+								// calculate the path variation
+								MOVEMENT_DESCRIPTOR.pathVariation = [];
+								
+								for(var i=MOVEMENT_DESCRIPTOR.path.length-1; i>pathIndexOfTargetPosition; i--){
+									MOVEMENT_DESCRIPTOR.pathVariation.push(-MOVEMENT_DESCRIPTOR.path[i]);
+								}
+								
+								MOVEMENT_DESCRIPTOR.pathValidity = true;
+								
+							} else {
+								
 								// calculate the path from the actual position and the target position
-								var localPath = maze.calculatePath(lastValidDragPosition, targetPosition);
+								var pathMovements = maze.calculatePath(MOVEMENT_DESCRIPTOR.actualPosition, targetPosition);
 								
 								// check if such path exist
-								if(localPath.length > 0){
-									for(var i=0; i<localPath.length; i++){
-										var enteringDirection = localPath[i] - 1;
-										
-										//#LOG#console.log('exiting from ' + lastValidDragPosition + ', direction: ' + enteringDirection);
-										
-										var step = maze[lastValidDragPosition].onSimulatedExit(enteringDirection);
-										if(step.canExit == true){
-											
-											targetPosition = maze[lastValidDragPosition].adiacents[enteringDirection];
-											
-											//#LOG#console.log('entering in ' + targetPosition + ', direction: ' + enteringDirection);
-											step = maze[targetPosition].onSimulatedEnter(enteringDirection);
-											
-											if(step.canEnter == true){
-												lastValidDragPosition = targetPosition;
-												actualDragPosition = lastValidDragPosition;
-												
-												var pathIndex = path.indexOf(actualDragPosition);
-												if(pathIndex != -1){
-													path = path.slice(0, pathIndex);
-												}
-												path.push(actualDragPosition);
-												
-												//$('#remainingMovements').text(remainingMovements - (path.length - 1));
-											}
-										}
+								if(pathMovements.length == 0){
+									
+									// case 4)
+									// the path is flagged as invalid
+									MOVEMENT_DESCRIPTOR.pathValidity = false;
+								} else {
+									
+									// case 5)
+									// calculate the path variation
+									MOVEMENT_DESCRIPTOR.pathVariation = [];
+									var actualPosition = MOVEMENT_DESCRIPTOR.actualPosition;
+									for(var i=0; i<pathMovements.length; i++){
+										actualPosition = MAZE_UTIL.getPosition(maze, actualPosition, pathMovements[i]);
+										MOVEMENT_DESCRIPTOR.pathVariation.push(actualPosition);
 									}
-								}
-							} else {
-								// the user is over the same space over which was the last time
-								// in this case we need an update only if the path was invalid
-								if(actualDragPosition == 0) {
-									actualDragPosition = lastValidDragPosition;
+									MOVEMENT_DESCRIPTOR.pathValidity = true;
 								}
 							}
-						} else {
-							// the user is in the maze area but he is not over a space
-							actualDragPosition = 0;
-						}
+						} 
 					}
 					
-					if(actualDragPosition == 0){ // il giocatore sta draggando il token in una posizione non valida
-						for(var i=0; i<path.length; i++){
-							maze[path[i]].setSimulationInvalid();
+					MOVEMENT_DESCRIPTOR.dirty = false;
+					
+					if(MOVEMENT_DESCRIPTOR.pathValidity == true){
+						for(var i=0; i<MOVEMENT_DESCRIPTOR.pathVariation.length; i++){
+							
+							var pathVariation = MOVEMENT_DESCRIPTOR.pathVariation[i];
+							
+							if(pathVariation < 0){
+								var positionRollback = MOVEMENT_DESCRIPTOR.path.pop();
+								MOVEMENT_DESCRIPTOR.dirty = true;
+								if(positionRollback != -pathVariation){
+									throw new Exception('invalid path variation');
+								} 
+								
+								maze[-pathVariation].rollback(MAZE_STATUS_CLONED);
+								
+								MOVEMENT_DESCRIPTOR.actualPosition = MOVEMENT_DESCRIPTOR.path[MOVEMENT_DESCRIPTOR.path.length-1];
+								
+							} else {
+								var direction = MAZE_UTIL.getDirection(maze, MOVEMENT_DESCRIPTOR.actualPosition, pathVariation);
+								
+								var step = maze[MOVEMENT_DESCRIPTOR.actualPosition].onExit(MAZE_STATUS_CLONED, direction);
+								if(step.canExit == true){
+									//#LOG#console.log('entering in ' + targetPosition + ', direction: ' + enteringDirection);
+									
+									step = maze[pathVariation].onEnter(direction);
+									
+									if(step.canEnter == true){
+										MOVEMENT_DESCRIPTOR.actualPosition = pathVariation;
+										
+										MOVEMENT_DESCRIPTOR.path.push(pathVariation);
+										MOVEMENT_DESCRIPTOR.dirty = true;
+									}
+								}
+							}
 						}
-						isSimulationValid = false;
-					} else { // il giocatore sta draggando il token in una posizione valida
-						for(var i=0; i<path.length; i++){
-							maze[path[i]].setSimulationValid();
-						}
-						isSimulationValid = true;
 					}
+					if(MOVEMENT_DESCRIPTOR.dirty == true){
+						pathRenderer.render(MOVEMENT_DESCRIPTOR.path, maze, mazeWrapper, caseSize);
+					}
+					
+					pathRenderer.setPathValid(MOVEMENT_DESCRIPTOR.pathValidity);
 				}
 			},
 			stop: function(event){
@@ -446,46 +503,116 @@ var mazeRenderer = {
 			}
 		});
 		
-		// token.on('touchstart', function(event){
-			// event = event.originalEvent;
-			// console.log('start: ' + event.targetTouches[0].pageX + ' ' + event.targetTouches[0].pageY);
-			// if (event.targetTouches.length == 1) {
-				// var touch = event.targetTouches[0];
-				// // Place element where the finger is
-				// dragToken.show().css({'left': (touch.pageX - caseSize) + 'px', 'top': (touch.pageY - caseSize) + 'px'});
-			// }
-		// });
-		
-		// token.on('touchmove', function(event){
-			// event = event.originalEvent;
-			// if (event.targetTouches.length == 1) {
-				// var touch = event.targetTouches[0];
-				
-				// var isOver = mazeOffset.left < touch.pageX && touch.pageX < mazeOffset.right;
-				// var isOnSide = mazeOffset.top < touch.pageY && touch.pageY < mazeOffset.bottom;
-				// if(isOver){
-					// dragToken.css('left', (touch.pageX - caseSize) + 'px');
-				// }
-				// if(isOnSide) {
-					// dragToken.css('top', (touch.pageY - caseSize) + 'px');
-				// }
-				// if(isOver && isOnSide){
-					// var col = Math.floor((touch.pageX - mazeOffset.left) / caseSize);
-					// var row = Math.floor((touch.pageY - mazeOffset.top) / caseSize);
-					// var targetPosition = maze.positions[row + '-' + col];
-					// if(targetPosition && targetPosition != actualPosition){
-						// maze[actualPosition].onDragExit && maze[actualPosition].onDragExit(targetPosition);
-						// maze[targetPosition].onDragEnter && maze[targetPosition].onDragEnter(actualPosition);
-						// actualPosition = targetPosition;
-					// }
-					// console.log('col: ' + col + ', row: ' + row);
-				// }
-			// }
-		// });
-		
-		// token.on('touchend', function(event){
-			// dragToken.hide();
-		// })
 		maze.trigger('start');
 	}
 }
+
+var pathRenderer = {
+	
+	css: {
+		'background-image': '-webkit-linear-gradient(#f1a165, #f36d0a)',
+		'border-style': 'solid',
+		'border-width': '0px'
+	},
+		
+	segments: [],
+		
+	startRadiusPercentage: 30,
+		
+	render: function(path, maze, container, caseSize){
+		
+		for(var i=0; i<this.segments.length; i++){
+			this.segments[i].remove();
+		}
+		
+		// check if path consist of a single space
+		if(path.length == 1){
+			
+			// if so, simply render a circle over the space
+			var position = maze[path[0]].position;
+			
+			// calculate the segment offset
+			var segmentDimensions = {
+				'top': (position[0] * caseSize) + (caseSize / 2) - (caseSize * this.startRadiusPercentage / 100),
+				'left': (position[1] * caseSize) + (caseSize / 2) - (caseSize * this.startRadiusPercentage / 100),
+				'border-radius': 2 * caseSize * this.startRadiusPercentage / 100,
+				'height': 2 * caseSize * this.startRadiusPercentage / 100,
+				'width': 2 * caseSize * this.startRadiusPercentage / 100
+			};
+			
+			// construct the segment
+			var segment = $('<div class="absolute"></div>');
+			
+			// apply the css rules
+			segment.css(this.css);
+			segment.css(segmentDimensions);
+			
+			// store the segment for future deletion
+			this.segments.push(segment);
+			
+			// append the segment to the container
+			container.append(segment);
+		} else {
+			var segmentLength = 0;
+			var direction = -1;
+			var startIndex = 0;
+			for(var i=0; i<path.length-1; i++){
+				var newDirection = MAZE_UTIL.getDirection(maze, path[i], path[i+1]);
+				if(direction == -1 || newDirection == direction) {
+					direction = newDirection;
+					segmentLength++;
+					continue;
+				}
+				
+				var position = maze[path[startIndex]].position;
+				
+				var segmentDimensions = {
+					'top': (position[0] * caseSize) + (caseSize / 2) - (caseSize * this.startRadiusPercentage / 100),
+					'left': (position[1] * caseSize) + (caseSize / 2) - (caseSize * this.startRadiusPercentage / 100),
+					'border-radius': caseSize * this.startRadiusPercentage / 100,
+					'height': 2 * caseSize * this.startRadiusPercentage / 100,
+					'width': segmentLength * caseSize
+				};
+				
+				var segment = $('<div class="absolute"></div>');
+				
+				segment.css(this.css);
+				segment.css(segmentDimensions);
+				
+				this.segments.push(segment);
+				
+				container.append(segment);
+				
+				segmentLength = 0;
+				direction = newDirection;
+			}
+			
+			
+			var position = maze[path[startIndex]].position;
+			
+			var segmentDimensions = {
+				'top': (position[0] * caseSize) + (caseSize / 2) - (caseSize * this.startRadiusPercentage / 100),
+				'left': (position[1] * caseSize) + (caseSize / 2) - (caseSize * this.startRadiusPercentage / 100),
+				'border-radius': caseSize * this.startRadiusPercentage / 100,
+				'height': 2 * caseSize * this.startRadiusPercentage / 100,
+				'width': segmentLength * caseSize + (2 * caseSize * this.startRadiusPercentage / 100)
+			};
+			
+			var segment = $('<div class="absolute"></div>');
+			
+			segment.css(this.css);
+			segment.css(segmentDimensions);
+			
+			this.segments.push(segment);
+			
+			container.append(segment);
+			
+		}
+	},
+	
+	setPathValid: function(validity){
+		for(var i=0; i<this.segments.length; i++){
+			this.segments[i].css('opacity', validity ? '1' : '0.3');
+		}
+	}
+};
