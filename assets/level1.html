@@ -14,6 +14,8 @@
 			<script type="text/javascript" src="resources/js/lib/jquery.mobile.min.js"></script>				
 			<script type="text/javascript" src="resources/js/lib/jquery.pep.custom.min.js"></script>
 			<script type="text/javascript" src="resources/js/space.js"></script>
+			<script type="text/javascript" src="resources/js/label.js"></script>
+			<script type="text/javascript" src="resources/js/desktopConfig.js"></script>
 			
 		</safeToDelete>
 		
@@ -39,7 +41,7 @@
 					script = document.createElement('script');
 					script.type = 'text/javascript';
 					script.src = scriptUrl;
-					script.onload = function() { mazeRenderer.render($('#middle'), maze); };
+					script.onload = function() { mazeRenderer.render($('#middle'), maze);};
 					script.onerror = function(e) { $('#top').html('dho'); };
 					head.appendChild(script);
 				});

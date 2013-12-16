@@ -98,9 +98,10 @@ function Space(position, walls, adiacents, types, callbacks){
 		repaint(self.$el);
 	};
 	
-	this.onSimulatedEnd = function(){
-		self.$el.removeAttr('pathType pathValidity pathDirection1 pathDirection2');
-		if(self.simulatedStart == true){
+	this.onSimulatedEnd = function(isSimulationValid){
+		if(!isSimulationValid || self.simulatedStart){
+			self.$el.removeAttr('pathType pathValidity pathDirection1 pathDirection2');
+			console.log('repainting at: ' + (new Date()).getTime());
 			repaint(self.$el);
 		}
 		self.simulatedStart = false;
@@ -126,12 +127,11 @@ function Space(position, walls, adiacents, types, callbacks){
 	
 	this.onEnter = function(maze, path, index, duration){
 		self.$el.removeAttr('pathType pathValidity pathDirection1 pathDirection2');
+		console.log('repainting at: ' + (new Date()).getTime());
 		repaint(self.$el);
 		self.callbacks.onEnter(self);
 		if(path[index+1]){
-			setTimeout(function(){
-				self.onExit(maze, path, index, duration);
-			}, duration);
+			self.onExit(maze, path, index, duration);
 		}
 	};
 	

@@ -2,20 +2,27 @@ var maze = {
 	character: 'warrior',
 	start: 1,
 	end: 6,
-	size: [1, 6],
-	'1': new Space([0, 0], '11000111', [0, 2, 0, 0]),
-	'2': new Space([0, 1], '01000100', [0, 3, 0, 1]),
-	'3': new Space([0, 2], '01000100', [0, 4, 0, 2], ['exp'], {onEnter: function(space){addStar(); space.$el.exp.transition({'scale': 3, 'opacity': 0, 'z-index': 100}, 1000, function(){space.$el.exp.remove();})}}),
-	'4': new Space([0, 3], '01000100', [0, 5, 0, 3], ['exp'], {onEnter: function(space){addStar(); space.$el.exp.transition({'scale': 3, 'opacity': 0, 'z-index': 100}, 1000, function(){space.$el.exp.remove();})}}),
-	'5': new Space([0, 4], '01000100', [0, 6, 0, 4], ['exp'], {onEnter: function(space){addStar(); space.$el.exp.transition({'scale': 3, 'opacity': 0, 'z-index': 100}, 1000, function(){space.$el.exp.remove();})}}),
-	'6': new Space([0, 5], '01111100', [0, 0, 0, 5], null, {onEnter: function(){completeLevel();}}),
+	size: [5, 6],
+	'1': new Space([2, 0], '11000111', [0, 2, 0, 0]),
+	'2': new Space([2, 1], '01000100', [0, 3, 0, 1]),
+	'3': new Space([2, 2], '01000100', [0, 4, 0, 2], ['exp'], {onEnter: function(space){addStar(1); space.$el.exp.transition({'scale': 3, 'opacity': 0, 'z-index': 100}, 600, function(){space.$el.exp.remove();})}}),
+	'4': new Space([2, 3], '01000100', [0, 5, 0, 3], ['exp'], {onEnter: function(space){addStar(2); space.$el.exp.transition({'scale': 3, 'opacity': 0, 'z-index': 100}, 600, function(){space.$el.exp.remove();})}}),
+	'5': new Space([2, 4], '01000100', [0, 6, 0, 4], ['exp'], {onEnter: function(space){addStar(3); space.$el.exp.transition({'scale': 3, 'opacity': 0, 'z-index': 100}, 600, function(){space.$el.exp.remove();})}}),
+	'6': new Space([2, 5], '01111100', [0, 0, 0, 5], null, {onEnter: function(){completeLevel();}}),
+	labels: [
+	    new Label([0, 0], [2, 3], 'YouAreHere'),
+	    new Label([0, 4], [2, 2], 'Exit'),
+	    new Label([3, 0], [2, 6], 'SlideYourFingerToMove')
+    ],
 	positions: {
-		'0-0': 1,
-		'0-1': 2,
-		'0-2': 3,
-		'0-3': 4,
-		'0-4': 5,
-		'0-5': 6,
+		'2-0': 1,
+		'2-1': 2,
+		'2-2': 3,
+		'2-3': 4,
+		'2-4': 5,
+		'2-5': 6,
+	},
+	trigger: function(triggerName){
 	},
 	calculatePath: function(start, end){
 		// retrieve the start and end coordinates (0 based)
@@ -91,9 +98,14 @@ var maze = {
 };
 
 var starIndex = 0;
-var addStar = function(){
-	starIndex++;
-	$('#star' + starIndex).addClass('taken');
+var starStatus = {};
+var isSimulationValid = false;
+var addStar = function(index){
+	if(!starStatus[index]){
+		starStatus[index] = true;
+		starIndex++;
+		$('#star' + starIndex).addClass('taken');
+	}
 };
 
 var progressBarMaxValue = 20;
@@ -176,7 +188,7 @@ var completeLevel = function(){
 				okButton.css('left', (2*padding + 2*cellW - okButton.width()/2) + 'px');
 			}
 		};
-		setTimeout(progressBarRun, 30);
+		setTimeout(progressBarRun, 500);
 				
 	});
 };
@@ -259,6 +271,18 @@ var mazeRenderer = {
 			caseIndex++;
 		}
 		
+		for(var i=0; i<maze.labels.length; i++){
+			var label = maze.labels[i];
+			
+			var labelTop = (label.position[0] * caseSize);
+			var labelLeft = (label.position[1] * caseSize);
+			var labelHeight = (label.size[0] * caseSize);
+			var labelWidth = (label.size[1] * caseSize);
+		
+			var cas = $('<img class="absolute" src="resources/images/labels/' + label.fileName + '.png" style="width: ' + labelWidth + 'px; height: ' + labelHeight + 'px; top: ' + labelTop + 'px; left: ' + labelLeft + 'px;"></img>');
+			mazeWrapper.append(cas);
+		}
+		
 		var tokenTop = maze[maze.end].position[0] * caseSize + (caseSize * (1 - exitTokenPadding) / 2);
 		var tokenLeft = maze[maze.end].position[1] * caseSize + (caseSize * (1 - exitTokenPadding) / 2);
 		
@@ -293,6 +317,7 @@ var mazeRenderer = {
 				path = [actualPosition];
 				lastValidDragPosition = actualPosition;
 				actualDragPosition = actualPosition;
+				isSimulationValid = true;
 				token.css({
 					'height': '+=' + (1.5*caseSize*characterTokenPadding),
 					'width': '+=' + (1.5*caseSize*characterTokenPadding),
@@ -328,48 +353,54 @@ var mazeRenderer = {
 						// retrieve the space corrispondent to the (row, col) coordinates
 						var targetPosition = maze.positions[row + '-' + col];
 						
-						// verify if the user is over a space different from the space over which was the last time
-						if(targetPosition && targetPosition != lastValidDragPosition){
+						// verify if the user is over a space
+						if(targetPosition){
 							
-							// calculate the path from the actual position and the target position
-							var localPath = maze.calculatePath(lastValidDragPosition, targetPosition);
-							
-							// check if such path exist
-							if(localPath.length > 0){
-								for(var i=0; i<localPath.length; i++){
-									var enteringDirection = localPath[i] - 1;
-									
-									//#LOG#console.log('exiting from ' + lastValidDragPosition + ', direction: ' + enteringDirection);
-									
-									var step = maze[lastValidDragPosition].onSimulatedExit(enteringDirection);
-									if(step.canExit == true){
+							// verify if the overed space different from the space over which was the last time
+							if(targetPosition != lastValidDragPosition){
+								// calculate the path from the actual position and the target position
+								var localPath = maze.calculatePath(lastValidDragPosition, targetPosition);
+								
+								// check if such path exist
+								if(localPath.length > 0){
+									for(var i=0; i<localPath.length; i++){
+										var enteringDirection = localPath[i] - 1;
 										
-										targetPosition = maze[lastValidDragPosition].adiacents[enteringDirection];
+										//#LOG#console.log('exiting from ' + lastValidDragPosition + ', direction: ' + enteringDirection);
 										
-										//#LOG#console.log('entering in ' + targetPosition + ', direction: ' + enteringDirection);
-										step = maze[targetPosition].onSimulatedEnter(enteringDirection);
-										
-										if(step.canEnter == true){
-											lastValidDragPosition = targetPosition;
-											actualDragPosition = lastValidDragPosition;
+										var step = maze[lastValidDragPosition].onSimulatedExit(enteringDirection);
+										if(step.canExit == true){
 											
-											var pathIndex = path.indexOf(actualDragPosition);
-											if(pathIndex != -1){
-												path = path.slice(0, pathIndex);
+											targetPosition = maze[lastValidDragPosition].adiacents[enteringDirection];
+											
+											//#LOG#console.log('entering in ' + targetPosition + ', direction: ' + enteringDirection);
+											step = maze[targetPosition].onSimulatedEnter(enteringDirection);
+											
+											if(step.canEnter == true){
+												lastValidDragPosition = targetPosition;
+												actualDragPosition = lastValidDragPosition;
+												
+												var pathIndex = path.indexOf(actualDragPosition);
+												if(pathIndex != -1){
+													path = path.slice(0, pathIndex);
+												}
+												path.push(actualDragPosition);
+												
+												//$('#remainingMovements').text(remainingMovements - (path.length - 1));
 											}
-											path.push(actualDragPosition);
-											
-											//$('#remainingMovements').text(remainingMovements - (path.length - 1));
 										}
 									}
 								}
+							} else {
+								// the user is over the same space over which was the last time
+								// in this case we need an update only if the path was invalid
+								if(actualDragPosition == 0) {
+									actualDragPosition = lastValidDragPosition;
+								}
 							}
 						} else {
-							// the user is over the same space over which was the last time
-							// in this case we need an update only if the path was invalid
-							if(actualDragPosition == 0) {
-								actualDragPosition = lastValidDragPosition;
-							}
+							// the user is in the maze area but he is not over a space
+							actualDragPosition = 0;
 						}
 					}
 					
@@ -377,17 +408,18 @@ var mazeRenderer = {
 						for(var i=0; i<path.length; i++){
 							maze[path[i]].setSimulationInvalid();
 						}
+						isSimulationValid = false;
 					} else { // il giocatore sta draggando il token in una posizione valida
 						for(var i=0; i<path.length; i++){
 							maze[path[i]].setSimulationValid();
 						}
+						isSimulationValid = true;
 					}
 				}
 			},
 			stop: function(event){
-				console.log('path:' + JSON.stringify(path));
 				for(var i=0; i<path.length; i++){
-					maze[path[i]].onSimulatedEnd();
+					maze[path[i]].onSimulatedEnd(isSimulationValid);
 				}
 				
 				if(actualDragPosition != 0){
@@ -396,14 +428,12 @@ var mazeRenderer = {
 				var tokenTop = maze[actualPosition].position[0] * caseSize + (caseSize * (1 - characterTokenPadding) / 2);
 				var tokenLeft = maze[actualPosition].position[1] * caseSize + (caseSize * (1 - characterTokenPadding) / 2);
 				
-				if(path.length > 1){
+				if(isSimulationValid){
 					//remainingMovements -= (path.length - 1);
-					maze[path[0]].onExit(maze, path, 0, Math.floor(200 / path.length));
+					maze[path[0]].onExit(maze, path, 0, 30);
 				}
 				
-				console.log('resetting');
 				setTimeout(function(){
-					
 					token.css({
 						left: tokenLeft, 
 						top: tokenTop, 
@@ -456,5 +486,6 @@ var mazeRenderer = {
 		// token.on('touchend', function(event){
 			// dragToken.hide();
 		// })
+		maze.trigger('start');
 	}
 }
