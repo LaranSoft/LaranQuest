@@ -70,6 +70,8 @@
 	background: url('../images/starVoid.png');
 }
 
+.scenicElement {z-index: 10;}
+
 #middle {
 	top: 50px;
 	bottom: 50px;

@@ -5,10 +5,10 @@ var maze = {
 	size: [5, 6],
 	'1': new Space([2, 0], '11000111', [0, 2, 0, 0]),
 	'2': new Space([2, 1], '01000100', [0, 3, 0, 1]),
-	'3': new Space([2, 2], '01000100', [0, 4, 0, 2], ['exp'], {onEnter: function(space){addStar(1); space.$el.exp.transition({'scale': 3, 'opacity': 0, 'z-index': 100}, 600, function(){space.$el.exp.remove();})}}),
-	'4': new Space([2, 3], '01000100', [0, 5, 0, 3], ['exp'], {onEnter: function(space){addStar(2); space.$el.exp.transition({'scale': 3, 'opacity': 0, 'z-index': 100}, 600, function(){space.$el.exp.remove();})}}),
-	'5': new Space([2, 4], '01000100', [0, 6, 0, 4], ['exp'], {onEnter: function(space){addStar(3); space.$el.exp.transition({'scale': 3, 'opacity': 0, 'z-index': 100}, 600, function(){space.$el.exp.remove();})}}),
-	'6': new Space([2, 5], '01111100', [0, 0, 0, 5], null, {onEnter: function(){completeLevel();}}),
+	'3': createExpSpace([2, 2], '01000100', [0, 4, 0, 2], 1),
+	'4': createExpSpace([2, 3], '01000100', [0, 5, 0, 3], 2),
+	'5': createExpSpace([2, 4], '01000100', [0, 6, 0, 4], 3),
+	'6': new Space([2, 5], '01111100', [0, 0, 0, 5], null, {overpass: function(){completeLevel();}}),
 	labels: [
 	    new Label([0, 0], [2, 3], 'YouAreHere'),
 	    new Label([0, 4], [2, 2], 'Exit'),
@@ -203,7 +203,8 @@ var completeLevel = function(){
 };
 
 var MAZE_STATUS = {
-	position: maze.start
+	position: maze.start,
+	stars: {}
 };
 var MAZE_STATUS_CLONED;
 var MOVEMENT_DESCRIPTOR;
@@ -276,7 +277,7 @@ var mazeRenderer = {
 						case 'exp': {
 							var tokenTop = caseTop + (caseSize * (1 - expTokenPadding) / 2);
 							var tokenLeft = caseLeft + (caseSize * (1 - expTokenPadding) / 2);
-							cas.exp = $('<img class="token exp" src="resources/images/exp.png" style="width: ' + (caseSize*expTokenPadding) + 'px; height: ' + (caseSize*expTokenPadding) + 'px; top: ' + tokenTop + 'px; left: ' + tokenLeft + 'px;"/>');
+							cas.exp = $('<img class="token exp scenicElement" src="resources/images/exp.png" style="width: ' + (caseSize*expTokenPadding) + 'px; height: ' + (caseSize*expTokenPadding) + 'px; top: ' + tokenTop + 'px; left: ' + tokenLeft + 'px;"/>');
 							mazeWrapper.append(cas.exp);
 						}
 					}
@@ -301,13 +302,13 @@ var mazeRenderer = {
 		var tokenTop = maze[maze.end].position[0] * caseSize + (caseSize * (1 - exitTokenPadding) / 2);
 		var tokenLeft = maze[maze.end].position[1] * caseSize + (caseSize * (1 - exitTokenPadding) / 2);
 		
-		var exit = $('<img class="token" src="resources/images/exit.png" width="' + (caseSize*exitTokenPadding) + '" height="' + (caseSize*exitTokenPadding) + '" style="top: ' + tokenTop + 'px; left: ' + tokenLeft + 'px;"/>');
+		var exit = $('<img class="token scenicElement" src="resources/images/exit.png" width="' + (caseSize*exitTokenPadding) + '" height="' + (caseSize*exitTokenPadding) + '" style="top: ' + tokenTop + 'px; left: ' + tokenLeft + 'px;"/>');
 		mazeWrapper.append(exit);
 		
 		tokenTop = maze[maze.start].position[0] * caseSize + (caseSize * (1 - characterTokenPadding) / 2);
 		tokenLeft = maze[maze.start].position[1] * caseSize + (caseSize * (1 - characterTokenPadding) / 2);
 		
-		var token = $('<img class="token" src="resources/images/' + maze.character + '.png" width="' + (caseSize*characterTokenPadding) + '" height="' + (caseSize*characterTokenPadding) + '" style="top: ' + tokenTop + 'px; left: ' + tokenLeft + 'px;"/>');
+		var token = $('<img class="token scenicElement" src="resources/images/' + maze.character + '.png" width="' + (caseSize*characterTokenPadding) + '" height="' + (caseSize*characterTokenPadding) + '" style="top: ' + tokenTop + 'px; left: ' + tokenLeft + 'px;"/>');
 		mazeWrapper.append(token);
 		
 		var actualPosition = maze.start;
@@ -331,12 +332,12 @@ var mazeRenderer = {
 				MAZE_STATUS_CLONED = $.extend(true, {}, MAZE_STATUS);
 				
 				MOVEMENT_DESCRIPTOR = {
-					startingPosition: MAZE_STATUS_CLONED.position,
+					startPosition: MAZE_STATUS_CLONED.position,
 					pathValidity: true,
 					path: []
 				};
-				MOVEMENT_DESCRIPTOR.actualPosition = MOVEMENT_DESCRIPTOR.startingPosition;
-				MOVEMENT_DESCRIPTOR.path.push(MOVEMENT_DESCRIPTOR.startingPosition);
+				MOVEMENT_DESCRIPTOR.actualPosition = MOVEMENT_DESCRIPTOR.startPosition;
+				MOVEMENT_DESCRIPTOR.path.push(MOVEMENT_DESCRIPTOR.startPosition);
 				
 				pathRenderer.render(MOVEMENT_DESCRIPTOR.path, maze, mazeWrapper, caseSize);
 				
@@ -422,7 +423,18 @@ var mazeRenderer = {
 									var actualPosition = MOVEMENT_DESCRIPTOR.actualPosition;
 									for(var i=0; i<pathMovements.length; i++){
 										actualPosition = MAZE_UTIL.getPosition(maze, actualPosition, pathMovements[i]);
-										MOVEMENT_DESCRIPTOR.pathVariation.push(actualPosition);
+										
+										var pathIndexOfNewPosition = MOVEMENT_DESCRIPTOR.path.indexOf(actualPosition);
+										if(pathIndexOfNewPosition != -1){
+											var slicedPath = MOVEMENT_DESCRIPTOR.path.slice(pathIndexOfNewPosition + 1);
+											
+											for(var j=0; j<slicedPath.length; j++){
+												MOVEMENT_DESCRIPTOR.pathVariation.push(-slicedPath[j]);
+											}
+											
+										} else {
+											MOVEMENT_DESCRIPTOR.pathVariation.push(actualPosition);
+										}
 									}
 									MOVEMENT_DESCRIPTOR.pathValidity = true;
 								}
@@ -455,7 +467,7 @@ var mazeRenderer = {
 								if(step.canExit == true){
 									//#LOG#console.log('entering in ' + targetPosition + ', direction: ' + enteringDirection);
 									
-									step = maze[pathVariation].onEnter(direction);
+									step = maze[pathVariation].onEnter(MAZE_STATUS_CLONED, direction);
 									
 									if(step.canEnter == true){
 										MOVEMENT_DESCRIPTOR.actualPosition = pathVariation;
@@ -475,20 +487,24 @@ var mazeRenderer = {
 				}
 			},
 			stop: function(event){
-				for(var i=0; i<path.length; i++){
-					maze[path[i]].onSimulatedEnd(isSimulationValid);
+				
+				if(MOVEMENT_DESCRIPTOR.pathValidity == false){
+					
+					pathRenderer.destroyPath();
+					MOVEMENT_DESCRIPTOR.actualPosition = MOVEMENT_DESCRIPTOR.startPosition;
+					
+				} else {
+				
+					MAZE_STATUS = MAZE_STATUS_CLONED;
+					
+					MAZE_STATUS.position = MOVEMENT_DESCRIPTOR.actualPosition;
+
+					pathRenderer.resolvePath(MOVEMENT_DESCRIPTOR.path, maze, caseSize);
+					
 				}
 				
-				if(actualDragPosition != 0){
-					actualPosition = actualDragPosition;
-				}
-				var tokenTop = maze[actualPosition].position[0] * caseSize + (caseSize * (1 - characterTokenPadding) / 2);
-				var tokenLeft = maze[actualPosition].position[1] * caseSize + (caseSize * (1 - characterTokenPadding) / 2);
-				
-				if(isSimulationValid){
-					//remainingMovements -= (path.length - 1);
-					maze[path[0]].onExit(maze, path, 0, 30);
-				}
+				var tokenTop = maze[MOVEMENT_DESCRIPTOR.actualPosition].position[0] * caseSize + (caseSize * (1 - characterTokenPadding) / 2);
+				var tokenLeft = maze[MOVEMENT_DESCRIPTOR.actualPosition].position[1] * caseSize + (caseSize * (1 - characterTokenPadding) / 2);
 				
 				setTimeout(function(){
 					token.css({
@@ -517,13 +533,12 @@ var pathRenderer = {
 		
 	segments: [],
 		
-	startRadiusPercentage: 30,
+	startRadiusPercentage: 20,
+	pathResolutionVel: 20, // spaces per second
 		
 	render: function(path, maze, container, caseSize){
 		
-		for(var i=0; i<this.segments.length; i++){
-			this.segments[i].remove();
-		}
+		this.destroyPath();
 		
 		// check if path consist of a single space
 		if(path.length == 1){
@@ -556,15 +571,22 @@ var pathRenderer = {
 			var segmentLength = 0;
 			var direction = -1;
 			var startIndex = 0;
+			var endIndex = 0;
 			for(var i=0; i<path.length-1; i++){
 				var newDirection = MAZE_UTIL.getDirection(maze, path[i], path[i+1]);
 				if(direction == -1 || newDirection == direction) {
+					endIndex = i+1;
 					direction = newDirection;
 					segmentLength++;
 					continue;
 				}
 				
-				var position = maze[path[startIndex]].position;
+				var index = startIndex;
+				if(direction == 3){
+					index = endIndex;
+				}
+				
+				var position = maze[path[index]].position;
 				
 				var segmentDimensions = {
 					'top': (position[0] * caseSize) + (caseSize / 2) - (caseSize * this.startRadiusPercentage / 100),
@@ -574,7 +596,7 @@ var pathRenderer = {
 					'width': segmentLength * caseSize
 				};
 				
-				var segment = $('<div class="absolute"></div>');
+				var segment = $('<div class="absolute" w="' + segmentDimensions['width'] + '" d="' + direction + '"></div>');
 				
 				segment.css(this.css);
 				segment.css(segmentDimensions);
@@ -587,8 +609,12 @@ var pathRenderer = {
 				direction = newDirection;
 			}
 			
+			var index = startIndex;
+			if(direction == 3){
+				index = path.length - 1;
+			}
 			
-			var position = maze[path[startIndex]].position;
+			var position = maze[path[index]].position;
 			
 			var segmentDimensions = {
 				'top': (position[0] * caseSize) + (caseSize / 2) - (caseSize * this.startRadiusPercentage / 100),
@@ -598,7 +624,7 @@ var pathRenderer = {
 				'width': segmentLength * caseSize + (2 * caseSize * this.startRadiusPercentage / 100)
 			};
 			
-			var segment = $('<div class="absolute"></div>');
+			var segment = $('<div class="absolute" w="' + segmentDimensions['width'] + '" d="' + direction + '"></div>');
 			
 			segment.css(this.css);
 			segment.css(segmentDimensions);
@@ -610,9 +636,92 @@ var pathRenderer = {
 		}
 	},
 	
+	destroyPath: function(){
+		for(var i=0; i<this.segments.length; i++){
+			this.segments[i].remove();
+		}
+		
+		this.segments.splice(0, this.segments.length);
+	},
+	
 	setPathValid: function(validity){
 		for(var i=0; i<this.segments.length; i++){
 			this.segments[i].css('opacity', validity ? '1' : '0.3');
 		}
+	},
+	
+	resolvePath: function(path, maze, caseSize){
+		
+		var self = this;
+		
+		var pixelPerSecond = this.pathResolutionVel * caseSize;
+		
+		var lastTimestamp = new Date().getTime();
+		var begin = lastTimestamp;
+		var lastSegmentIndex = 0;
+		var lastSegmentDescriptor = {
+			index: lastSegmentIndex,
+			segment: self.segments[lastSegmentIndex],
+			spaces: 0
+		};
+		lastSegmentDescriptor['width'] = lastSegmentDescriptor.segment.attr('w');
+		lastSegmentDescriptor['direction'] = lastSegmentDescriptor.segment.attr('d');
+		
+		(function resolveLoop(time){
+			
+			if(lastSegmentIndex >= self.segments.length) return;
+			
+			if(lastSegmentIndex != lastSegmentDescriptor.index){
+				// refresh the descriptor
+				lastSegmentDescriptor = {
+					index: lastSegmentIndex,
+					segment: self.segments[lastSegmentIndex],
+					spaces: lastSegmentDescriptor.spaces
+				};
+				lastSegmentDescriptor['width'] = lastSegmentDescriptor.segment.attr('w');
+				lastSegmentDescriptor['direction'] = lastSegmentDescriptor.segment.attr('d');
+			}
+			
+			var now = new Date().getTime();
+			var delta = now - lastTimestamp;
+			var pixel = delta / 1000 * pixelPerSecond;
+			lastTimestamp = now; 
+			lastSegmentDescriptor.width -= pixel;
+			
+			if(isNaN(lastSegmentDescriptor.width) || lastSegmentDescriptor.width <= 0){
+				lastSegmentDescriptor.width = 0;
+				lastSegmentIndex++;
+			}
+
+			var newCss = {
+				'width': lastSegmentDescriptor.width
+			};
+			
+			if(lastSegmentDescriptor.direction == 1){
+				newCss['left'] = '+=' + pixel
+			}
+			lastSegmentDescriptor.segment.css(newCss);
+			
+			var spaces = Math.ceil((now - begin) / 1000 * self.pathResolutionVel);
+			
+			if(lastSegmentDescriptor.spaces < spaces){
+				for(var i=lastSegmentDescriptor.spaces; i<spaces; i++){
+					maze[path[i]].overpass(maze[path[i]]);
+				}
+				lastSegmentDescriptor.spaces = spaces;
+			}
+            
+            self.requestAnimationFrame(resolveLoop);
+        })(lastTimestamp);
+		
+	},
+	
+	requestAnimationFrame: function(callback) {
+	    return  window.requestAnimationFrame        && window.requestAnimationFrame(callback)         ||
+	            window.webkitRequestAnimationFrame  && window.webkitRequestAnimationFrame(callback)   ||
+	            window.mozRequestAnimationFrame     && window.mozRequestAnimationFrame(callback)      ||
+	            window.oRequestAnimationFrame       && window.mozRequestAnimationFrame(callback)      ||
+	            window.msRequestAnimationFrame      && window.msRequestAnimationFrame(callback)       ||
+	            window.setTimeout(callback, 1000 / 60);
 	}
 };
