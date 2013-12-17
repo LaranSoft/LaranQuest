@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html" charset="UTF-8">
+		<meta name="viewport" content="height=device-height, width=device-width, user-scalable=no">
+	</head>
+	<body>
+		<div data-role="page" id="levelSelection">
+			<div data-role="header">
+				<a href="_.html" data-icon="home" data-transition="slide" data-direction="reverse">Home</a>
+				<h1>Choose level</h1>
+			</div>
+			<div id="content">
+				<div id="stage1" class="stage active" level="1">1
+					<img class="star first" src="resources/images/starVoid.png" draggable="false"></img>
+					<img class="star middle" src="resources/images/starVoid.png" draggable="false"></img>
+					<img class="star last" src="resources/images/starVoid.png" draggable="false"></img>
+				</div>
+				<div id="stage2" class="stage" level="2">2
+					<img class="star first" src="resources/images/starVoid.png" draggable="false"></img>
+					<img class="star middle" src="resources/images/starVoid.png" draggable="false"></img>
+					<img class="star last" src="resources/images/starVoid.png" draggable="false"></img>
+					<img id="stage2lock" class="lock" src="resources/images/locked.png" draggable="false"></img>
+				</div>
+				
+				<div id="test">
+					<span class="v"></span>
+					<span class="h"></span>
+				</div>
+			</div>
+			<style>
+				#levelSelection {
+					background-image: -webkit-linear-gradient(#000, #fff) !important;
+				}
+			
+				@font-face {
+					font-family: 'trashhand';
+					src: url('resources/fonts/TrashHand.TTF') format('truetype');
+				}
+			
+				.stage {
+					height: 100px;
+					width: 100px;
+					background-image: -webkit-linear-gradient(#f1a165, #f36d0a);
+					border-radius: 20px;
+					font-family: trashhand;
+					font-size: 70px;
+					text-align:center;
+					
+					color: white;
+					text-shadow: 
+						-2px -2px 0 #000, 
+						2px -2px 0 #000, 
+						-2px 2px 0 #000, 
+						2px 2px 0 #000;
+					position: absolute;
+					-webkit-user-select:none;
+				    -moz-user-select:none;
+				    -ms-user-select:none;
+				    user-select:none;
+				}
+				
+				.stage.active:active,
+				.stage.visited {
+					background-image: -webkit-linear-gradient(#f36d0a, #f1a165);
+				}
+				
+				#stage2 {left: 120px;}
+				
+				.star {
+					position: absolute;
+					bottom: 5px;
+					height: 30px;
+					width: 30px;
+				}
+				
+				.lock {
+					position: absolute;
+					bottom: 10px;
+					left: 10px;
+					height: 80px;
+					width: 80px;
+				}
+				
+				.star.first {left: 3px;}
+				.star.middle {left: 35px;}
+				.star.last {left: 67px;}
+				
+				#test {
+					display: none;
+					-webkit-backface-visibility: hidden;
+					-webkit-transform-style: preserve-3d;
+					-webkit-transform: scale(0.001)
+				}
+				
+				#test,
+				#test .h,
+				#test .v {
+					background-color: white;
+					position: absolute;
+				}
+			</style>
+		
+			<script>
+				$('#levelSelection').on('pageshow', function() {
+					loader.loadScript('resources/js/levelSelection.js', function(){ 
+						levelSelection.render($('#content'));
+					});
+				});
+			</script>
+		</div>
+		
+	</body>
+</html>

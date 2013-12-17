@@ -11,10 +11,14 @@
 		<script type="text/javascript" src="resources/js/lib/jquery.min.js"></script>
 		<script type="text/javascript" src="resources/js/lib/jquery.mobile.min.js"></script>				
 		<script type="text/javascript" src="resources/js/lib/jquery.pep.custom.min.js"></script>
+		<script type="text/javascript" src="resources/js/lib/jquery.transit.min.js"></script>
 		
 		<script type="text/javascript" src="resources/js/space.js"></script>
-		<script type="text/javascript" src="resources/js/lib/jquery.transit.min.js"></script>
-		<!--script type="text/javascript" src="resources/js/lib/jquery.pep.js"></script-->				
+		<script type="text/javascript" src="resources/js/loader.js"></script>
+		<script type="text/javascript" src="resources/js/label.js"></script>
+		
+		
+		<script type="text/javascript" src="resources/js/desktopConfig.js"></script>
 		
 	</head>
 	<body>
@@ -22,54 +26,12 @@
 			<div data-role="header"><h1>Welcome</h1></div>
 			<div data-role="content">
 				<p id="p">
-					LaranQuest is a wonderful strategy game!!!
+					Welcome to LaranQuest
 				</p>
 				<ul data-role="listview" data-inset="true">
-					<li><a href="#tutorialPage" data-transition="slide">Play the tutorial</a></li>
+					<li><a href="levelSelection.html" data-transition="slide">Play the tutorial</a></li>
 				</ul>
 			</div>
-			<div data-role="footer" data-position="fixed">
-				<i>Copyright Laransoft &copy; 2013</i>
-			</div>
 		</div>
-		<div data-role="page" id="tutorialPage">
-			<div data-role="header">
-				<a href="#homePage" data-icon="home" data-transition="slide" data-direction="reverse">Home</a>
-				<h1>Tutorial</h1>
-			</div>
-			<div data-role="content">
-				<p>
-				Choose a level
-				</p>
-				<ul data-role="listview">
-					<li><a href="level1.html">Level 1</a></li>
-					<li><a href="#tutorialPage">Level 2</a></li>
-					<li><a href="#tutorialPage">Level 3</a></li>
-					<li><a href="#tutorialPage">Level 4</a></li>
-					<li><a href="#tutorialPage">Level 5</a></li>
-					<li><a href="#tutorialPage">Level 6</a></li>
-				</ul>
-			</div>
-			<div data-role="footer" data-position="fixed">
-				<i>Copyright Laransoft &copy; 2013</i>
-			</div>
-		</div>
-	
-		<script>
-				var UI = {
-					head: $('head')
-				};
-				
-				$(function(){
-					//var scriptUrl = "resources/js/test.js";
-					//var head = document.getElementsByTagName('head')[0];
-					//script = document.createElement('script');
-					//script.type = 'text/javascript';
-					//script.src = scriptUrl;
-					//script.onload = function() { testFunction(); };
-					//script.onerror = function(e) { $('#p').html('dho'); };
-					//head.appendChild(script);
-				});
-		</script>
 	</body>
 </html>

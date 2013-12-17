@@ -191,7 +191,7 @@ var completeLevel = function(){
 				progressBar.css('width', progressBarValue * progressBarStep);
 				setTimeout(progressBarRun, 30);
 			} else {
-				var okButton = $('<a class="absolute levelSummaryElement" style="top: ' + (padding + 4*cellH) + 'px;" href="#tutorialPage" data-role="button" data-theme="a">Ok</a>');
+				var okButton = $('<a class="absolute levelSummaryElement" style="top: ' + (padding + 4*cellH) + 'px;" href="levelSelection.html" data-role="button" data-theme="a">Ok</a>');
 				body.append(okButton);
 				okButton.button();
 				okButton.css('left', (2*padding + 2*cellW - okButton.width()/2) + 'px');
