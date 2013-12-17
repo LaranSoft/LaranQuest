@@ -421,20 +421,32 @@ var mazeRenderer = {
 									// calculate the path variation
 									MOVEMENT_DESCRIPTOR.pathVariation = [];
 									var actualPosition = MOVEMENT_DESCRIPTOR.actualPosition;
+									var minPathIndexOfNewPosition = -1;
+									var maxMovementIndex = 0;
+									var pathPositions = [];
+									
 									for(var i=0; i<pathMovements.length; i++){
 										actualPosition = MAZE_UTIL.getPosition(maze, actualPosition, pathMovements[i]);
+										pathPositions.push(actualPosition);
 										
 										var pathIndexOfNewPosition = MOVEMENT_DESCRIPTOR.path.indexOf(actualPosition);
-										if(pathIndexOfNewPosition != -1){
-											var slicedPath = MOVEMENT_DESCRIPTOR.path.slice(pathIndexOfNewPosition + 1);
-											
-											for(var j=0; j<slicedPath.length; j++){
-												MOVEMENT_DESCRIPTOR.pathVariation.push(-slicedPath[j]);
-											}
-											
-										} else {
-											MOVEMENT_DESCRIPTOR.pathVariation.push(actualPosition);
+										if(pathIndexOfNewPosition != -1 && (minPathIndexOfNewPosition == -1 || pathIndexOfNewPosition < minPathIndexOfNewPosition)){
+											maxMovementIndex = i+1;
+											minPathIndexOfNewPosition = pathIndexOfNewPosition; 
 										}
+									}
+									
+									if(minPathIndexOfNewPosition != -1){
+									
+										var slicedPath = MOVEMENT_DESCRIPTOR.path.slice(minPathIndexOfNewPosition + 1);
+												
+										for(var i=slicedPath.length-1; i>=0; i--){
+											MOVEMENT_DESCRIPTOR.pathVariation.push(-slicedPath[i]);
+										}
+									}
+									
+									for(var i=maxMovementIndex; i<pathPositions.length; i++){
+										MOVEMENT_DESCRIPTOR.pathVariation.push(pathPositions[i]);
 									}
 									MOVEMENT_DESCRIPTOR.pathValidity = true;
 								}
@@ -453,7 +465,7 @@ var mazeRenderer = {
 								var positionRollback = MOVEMENT_DESCRIPTOR.path.pop();
 								MOVEMENT_DESCRIPTOR.dirty = true;
 								if(positionRollback != -pathVariation){
-									throw new Exception('invalid path variation');
+									throw 'invalid path variation';
 								} 
 								
 								maze[-pathVariation].rollback(MAZE_STATUS_CLONED);
