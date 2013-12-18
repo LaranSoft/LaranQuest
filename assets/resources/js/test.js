@@ -180,6 +180,16 @@ var completeLevel = function(){
 		starPointsContainer.append(starPoints);
 		body.append(starPointsContainer);
 
+		var stages = loader.loadFromMemory('stages');
+		if(isNaN(stages[0].stars) || stages[0].stars < starIndex){
+			stages[0].stars = starIndex;
+		}
+		if(stages[1].locked === true){
+			stages[1].toUnlock = true;
+		}
+		loader.saveInMemory('stages', stages);
+		
+		// TODO trasformare in requestAnimFrame
 		var progressBarRun = function(){
 			if(starPointsValue > 0){
 				starPointsValue--;

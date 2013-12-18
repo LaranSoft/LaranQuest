@@ -6,29 +6,21 @@
 	</head>
 	<body>
 		<div data-role="page" id="levelSelection">
-			<div data-role="header">
-				<a href="_.html" data-icon="home" data-transition="slide" data-direction="reverse">Home</a>
-				<h1>Choose level</h1>
-			</div>
 			<div id="content">
-				<div id="stage1" class="stage active" level="1">1
-					<img class="star first" src="resources/images/starVoid.png" draggable="false"></img>
-					<img class="star middle" src="resources/images/starVoid.png" draggable="false"></img>
-					<img class="star last" src="resources/images/starVoid.png" draggable="false"></img>
-				</div>
-				<div id="stage2" class="stage" level="2">2
-					<img class="star first" src="resources/images/starVoid.png" draggable="false"></img>
-					<img class="star middle" src="resources/images/starVoid.png" draggable="false"></img>
-					<img class="star last" src="resources/images/starVoid.png" draggable="false"></img>
-					<img id="stage2lock" class="lock" src="resources/images/locked.png" draggable="false"></img>
-				</div>
-				
 				<div id="test">
 					<span class="v"></span>
 					<span class="h"></span>
 				</div>
 			</div>
+			<div class="footer">
+				<span class="centeredH">
+					<a href="_.html" data-role="button" data-icon="home" data-transition="slide" data-direction="reverse">Home</a>
+				</span>
+			</div>
 			<style>
+				.footer {position: absolute; height: 50px; width: 100%; bottom: 0px; left: 0px;}
+				#content {position: absolute; top: 0px; bottom: 50px; width: 100%;}
+				.centeredH {position: absolute; margin-left: 33%; height: 40px; width: 33%; top: -10px;}
 				#levelSelection {
 					background-image: -webkit-linear-gradient(#000, #fff) !important;
 				}
@@ -39,20 +31,12 @@
 				}
 			
 				.stage {
-					height: 100px;
-					width: 100px;
 					background-image: -webkit-linear-gradient(#f1a165, #f36d0a);
-					border-radius: 20px;
 					font-family: trashhand;
-					font-size: 70px;
 					text-align:center;
 					
 					color: white;
-					text-shadow: 
-						-2px -2px 0 #000, 
-						2px -2px 0 #000, 
-						-2px 2px 0 #000, 
-						2px 2px 0 #000;
+					text-shadow: -5px -5px 0 #000;
 					position: absolute;
 					-webkit-user-select:none;
 				    -moz-user-select:none;
@@ -65,26 +49,14 @@
 					background-image: -webkit-linear-gradient(#f36d0a, #f1a165);
 				}
 				
-				#stage2 {left: 120px;}
-				
 				.star {
 					position: absolute;
 					bottom: 5px;
-					height: 30px;
-					width: 30px;
 				}
 				
 				.lock {
 					position: absolute;
-					bottom: 10px;
-					left: 10px;
-					height: 80px;
-					width: 80px;
 				}
-				
-				.star.first {left: 3px;}
-				.star.middle {left: 35px;}
-				.star.last {left: 67px;}
 				
 				#test {
 					display: none;
@@ -104,7 +76,7 @@
 			<script>
 				$('#levelSelection').on('pageshow', function() {
 					loader.loadScript('resources/js/levelSelection.js', function(){ 
-						levelSelection.render($('#content'));
+						levelSelection.render($('#content'), loader.loadFromMemory('stages'));
 					});
 				});
 			</script>
