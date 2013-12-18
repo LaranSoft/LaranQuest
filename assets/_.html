@@ -13,17 +13,13 @@
 		<script type="text/javascript" src="resources/js/lib/jquery.pep.custom.min.js"></script>
 		<script type="text/javascript" src="resources/js/lib/jquery.transit.min.js"></script>
 		
+		<script type="text/javascript" src="resources/js/mazeHandler.js"></script>
 		<script type="text/javascript" src="resources/js/space.js"></script>
 		<script type="text/javascript" src="resources/js/loader.js"></script>
 		<script type="text/javascript" src="resources/js/label.js"></script>
 		
 		<script type="text/javascript" src="resources/js/desktopConfig.js"></script>
 		
-		<script>
-			$(function(){
-				loader.init();
-			});
-		</script>
 	</head>
 	<body>
 		<div data-role="page" id="homePage">
@@ -36,6 +32,13 @@
 					<li><a href="levelSelection.html" data-transition="slide">Play the tutorial</a></li>
 				</ul>
 			</div>
+			
+			<script>
+				$('#homePage').on('pageshow', function() {
+					loader.init();
+				});
+			</script>
+			
 		</div>
 	</body>
 </html>
