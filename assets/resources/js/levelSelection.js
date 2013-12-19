@@ -75,7 +75,7 @@ var levelSelection = {
 							stage.addClass('active');
 							stageStatus.locked = false;
 							delete stageStatus.toUnlock;
-							loader.saveInMemory('stages', model);
+							memory.save('stages', model);
 						});
 					}, 1000);
 				}

@@ -37,7 +37,8 @@
 			<script>
 				$('#level1').on('pageshow', function() {
 					loader.loadScript('resources/js/level1.js', function(){ 
-						mazeRenderer.render($('#middle'), maze);
+						level1.setLevelGUI(new LevelGUI(1));
+						level1.render($('#middle'));
 					});
 				});
 			</script>

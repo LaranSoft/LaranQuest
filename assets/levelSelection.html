@@ -76,7 +76,7 @@
 			<script>
 				$('#levelSelection').on('pageshow', function() {
 					loader.loadScript('resources/js/levelSelection.js', function(){ 
-						levelSelection.render($('#content'), loader.loadFromMemory('stages'));
+						levelSelection.render($('#content'), memory.load('stages'));
 					});
 				});
 			</script>
