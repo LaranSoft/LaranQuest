@@ -1,9 +1,9 @@
-function LevelGUI(level){
+function LevelGUI(){
 	this.$remainingMovements = $('#remainingMovements'); 
 	this.$star1 = $('#star1');
 	this.$star2 = $('#star2');
 	this.$star3 = $('#star3');
-	this.$body = $('#level' + level);
+	this.$body = $('#level');
 	
 	this.star1 = false;
 	this.star2 = false;
@@ -39,7 +39,7 @@ LevelGUI.prototype.completeLevel = function(){
 	var blockMask = $('<div id="blockMask" class="absolute"></div>');
 	
 	this.$body.append(blockMask);
-	$('.scenicElement').remove();
+	$('.scenicElement').css('z-index', 'auto');
 	blockMask.animate({
 		'opacity': 0.9
 	}, 600, function(){
@@ -62,7 +62,7 @@ LevelGUI.prototype.completeLevel = function(){
 		self.$body.append(token);
 		
 		var levelLabelContainer = $('<div class="absolute levelSummaryElement" style="color: white; font-size: ' + (maxFitSquareSize/2) + 'px; top: ' + padding + 'px; left: ' + (padding + cellW) + 'px; width: ' + (3*cellW) + 'px; height: ' + (cellH) + 'px;"></div>');
-		var levelLabel = $('<span class="absolute levelSummaryElement" style="height: ' + (maxFitSquareSize/2 + 20) + 'px; line-height: ' + (maxFitSquareSize/2 + 20) + 'px; top: ' + (cellH/2 - (maxFitSquareSize/4 + 10)) + 'px; left: 25px;">Level <span id="level" class="levelSummaryElement">1</span></span>');
+		var levelLabel = $('<span class="absolute levelSummaryElement" style="height: ' + (maxFitSquareSize/2 + 20) + 'px; line-height: ' + (maxFitSquareSize/2 + 20) + 'px; top: ' + (cellH/2 - (maxFitSquareSize/4 + 10)) + 'px; left: 25px;">Level <span id="levelValue" class="levelSummaryElement">1</span></span>');
 		levelLabelContainer.append(levelLabel);
 		self.$body.append(levelLabelContainer);
 		
@@ -100,23 +100,27 @@ LevelGUI.prototype.completeLevel = function(){
 		var onLevelUp = function(){
 			progressBarMaxValue = 30;
 			progressBarStep = progressBarWidth / progressBarMaxValue;
-			$('#level').text('2').css('color', 'green');
+			$('#levelValue').text('2').css('color', 'green');
 		};
 		
+		var starPointsToConsume = starPointsValue;
 		var progressBarRun = new TWEEN.Tween({x: starPointsValue})
-			.to({x: 0}, 5000)
+			.to({x: 0}, 600)
 			.easing(TWEEN.Easing.Linear.None)
 			.onUpdate(function(){
 				var remainedStarPoints = Math.floor(this.x);
-				var delta = starPointsValue - remainedStarPoints;
-				$('#starPoints').text(remainedStarPoints);
-				
-				progressBarValue += delta;
-				if(progressBarValue > progressBarMaxValue){
-					onLevelUp();
-					progressBarValue -= progressBarMaxValue;
+				if(starPointsToConsume > remainedStarPoints){
+					var delta = starPointsToConsume - remainedStarPoints;
+					starPointsToConsume = remainedStarPoints;
+					$('#starPoints').text(remainedStarPoints);
+					
+					progressBarValue += delta;
+					if(progressBarValue > progressBarMaxValue){
+						progressBarValue -= progressBarMaxValue;
+						onLevelUp();
+					}
+					progressBar.css('width', progressBarValue * progressBarStep);
 				}
-				progressBar.css('width', progressBarValue * progressBarStep);
 	        })
 	        .delay(500)
 	        .onComplete(function(){

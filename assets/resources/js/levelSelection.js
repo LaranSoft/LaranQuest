@@ -22,7 +22,7 @@ var levelSelection = {
 			
 			var stageStatus = model[i];
 			
-			var stage = $('<div id="stage' + (i+1) + '" class="stage active" level="' + (i+1) + '">' + (i+1) + '</div>');
+			var stage = $('<div id="stage' + (i+1) + '" class="stage" level="' + (i+1) + '">' + (i+1) + '</div>');
 			
 			var stars = []; 
 			
@@ -64,21 +64,11 @@ var levelSelection = {
 				stage.append(lock);
 				
 				if(stageStatus.toUnlock === true){
-					// TODO trasformare in requestAnimFrame e stare attenti alle variabili
-					setTimeout(function(){
-						lock.attr('src', 'resources/images/unlocked.png').transition({
-							'scale': 3, 
-							'opacity': 0, 
-							'z-index': 100
-						}, 600, function(){
-							lock.remove();
-							stage.addClass('active');
-							stageStatus.locked = false;
-							delete stageStatus.toUnlock;
-							memory.save('stages', model);
-						});
-					}, 1000);
+					lock.attr('toUnlock', i);
+					stage.attr('toActivate', '1');
 				}
+			} else {
+				stage.addClass('active');
 			}
 			
 			container.append(stage);
@@ -86,8 +76,10 @@ var levelSelection = {
 		
 		$('.stage').on('click', function(event){
 			var $self = $(this);
-			if($self.hasClass('active')){
+			if($self.hasClass('active') && !$self.hasClass('visited')){
 				$self.addClass('visited');
+				var level = $self.attr('level');
+				memory.save('levelSelected', level);
 				$('#test').css({
 					'left': '+=' + event.clientX + 'px',
 					'top': '+=' + event.clientY + 'px',
@@ -96,8 +88,7 @@ var levelSelection = {
 					'scale': 2,
 					'rotate': 120
 				}, 1200, 'linear', function(){
-					var level = $self.attr('level');
-					$.mobile.changePage('level' + level + '.html');
+					$.mobile.changePage('level.html');
 				});
 			}
 		});
@@ -128,15 +119,19 @@ var levelSelection = {
 			'top': (4/5*max) + 'px',
 			'left': (-1/5*max) + 'px'
 		});
-	
-//			$('#stage2lock').attr('src', 'resources/images/unlocked.png').transition({
-//				'scale': 3, 
-//				'opacity': 0, 
-//				'z-index': 100
-//			}, 600, function(){
-//				$('#stage2lock').remove();
-//				$('#stage2').addClass('active');
-//			});
 		
+		var toUnlock = $('[toUnlock]');
+		toUnlock.attr('src', 'resources/images/unlocked.png').transition({
+			'scale': 3, 
+			'opacity': 0, 
+			'z-index': 100
+		}, 600, function(){
+			toUnlock.remove();
+			$('[toActivate=1]').addClass('active');
+			var stageStatus = model[toUnlock.attr('toUnlock')];
+			stageStatus.locked = false;
+			delete stageStatus.toUnlock;
+			memory.save('stages', model);
+		});
 	}	
 };

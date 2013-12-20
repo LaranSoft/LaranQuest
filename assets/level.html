@@ -5,7 +5,7 @@
 		<meta name="viewport" content="height=device-height, width=device-width, user-scalable=no">
 	</head>
 	<body>
-		<div data-role="page" id="level1">
+		<div data-role="page" id="level">
 			<div id="top">
 				<div id="levelStatus">
 					<div id="remainingMovements" class="absolute hidden">5</div>
@@ -17,10 +17,12 @@
 			<div id="middle"></div>
 			<div id="bottom"></div>
 			<script>
-				$('#level1').on('pageshow', function() {
-					loader.loadScript('resources/js/level1.js', function(){ 
-						level1.setLevelGUI(new LevelGUI(1));
-						level1.render($('#middle'));
+				$('#level').on('pageshow', function() {
+					var levelSelected = memory.load('levelSelected');
+					loader.loadScript('resources/js/level' + levelSelected + '.js', function(){
+						var level = window['level' + levelSelected];
+						level.setLevelGUI(new LevelGUI(1));
+						level.render($('#middle'));
 					});
 				});
 			</script>
