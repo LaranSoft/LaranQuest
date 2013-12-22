@@ -15,5 +15,9 @@ var level1 = new Maze(
 	    new Label([0, 0], [2, 3], 'YouAreHere'),
 	    new Label([0, 4], [2, 2], 'Exit'),
 	    new Label([3, 0], [2, 6], 'SlideYourFingerToMove')
-    ]
+    ],
+    {},			// triggers
+    {			// statusModifier
+		remainingMovements: NaN
+    }
 );

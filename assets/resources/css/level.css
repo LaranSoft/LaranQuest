@@ -20,7 +20,7 @@
 
 #top {
 	top: 0px;
-	height: 50px;
+	height: 60px;
 	left: 0px;
 	width: 100%;
 }
@@ -28,7 +28,7 @@
 #levelStatus {
 	top: 5px;
 	left: 5px;
-	height: 100%;
+	height: 50px;
 	right: 5px;
 	background-color: rgba(0, 0, 0, 0.7);
 }
@@ -73,7 +73,7 @@
 .scenicElement {z-index: 10;}
 
 #middle {
-	top: 50px;
+	top: 60px;
 	bottom: 50px;
 	left: 0px;
 	width: 100%;
@@ -116,6 +116,9 @@
 .w01000100 {background-image: url('../images/01000100.png');}
 .w01111100 {background-image: url('../images/01111100.png');}
 .w11000111 {background-image: url('../images/11000111.png');}
+.w01110010 {background-image: url('../images/01110010.png');}
+.w00010001 {background-image: url('../images/00010001.png');}
+.w00100111 {background-image: url('../images/00100111.png');}
 
 .progressBarContainer {
 	background-color: #555;

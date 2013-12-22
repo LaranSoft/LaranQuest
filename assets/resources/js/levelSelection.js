@@ -88,6 +88,7 @@ var levelSelection = {
 					'scale': 2,
 					'rotate': 120
 				}, 1200, 'linear', function(){
+					$('#levelSelection').html('<div style="background-color: white;></div>"');
 					$.mobile.changePage('level.html');
 				});
 			}
@@ -124,7 +125,8 @@ var levelSelection = {
 		toUnlock.attr('src', 'resources/images/unlocked.png').transition({
 			'scale': 3, 
 			'opacity': 0, 
-			'z-index': 100
+			'z-index': 100,
+			'delay': 500
 		}, 600, function(){
 			toUnlock.remove();
 			$('[toActivate=1]').addClass('active');

@@ -10,14 +10,18 @@ Space.prototype.setDOMSpaceElement = function($el){
 };
 
 Space.prototype.onEnter = function(status, direction){
+	status.remainingMovements --;
 	return {canEnter: true};
 };
 
 Space.prototype.onExit = function(status, direction){
-	return {canExit: true};
+	console.log('remainingMovements: ' + status.remainingMovements);
+	return {canExit: isNaN(status.remainingMovements) || status.remainingMovements > 0};
 };
 
-Space.prototype.rollback = function(status, direction){};
+Space.prototype.rollback = function(status, direction){
+	status.remainingMovements++;
+};
 Space.prototype.overpass = function(space, levelGUI){};
 
 /******************************************************
@@ -51,6 +55,7 @@ ExpSpace.prototype.rollback = function(status, direction) {
 	return Space.prototype.rollback.apply(this, arguments);
 };
 ExpSpace.prototype.overpass = function(space, levelGUI) {
+	Space.prototype.overpass.apply(this, arguments);
 	if(!this.overpassed){
 		this.overpassed = true;
 		levelGUI.addStar(this.expIndex); 
@@ -73,5 +78,6 @@ ExitSpace.prototype = Object.create(Space.prototype);
 ExitSpace.prototype.constructor = ExitSpace;
 
 ExitSpace.prototype.overpass = function(space, levelGUI) {
+	Space.prototype.overpass.apply(this, arguments);
 	levelGUI.completeLevel();
 };

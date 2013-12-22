@@ -1,13 +1,14 @@
-function Maze(character, size, start, end, spaces, labels, triggers){
+function Maze(character, size, start, end, spaces, labels, triggers, statusModifier){
 	
 	this.character = character;
 	this.size = size;
 	this.start = start;
 	this.end = end;
 	this.spaces = {};
-	this.labels = labels;
+	this.labels = labels || [];
 	this.positions = {};
 	this.triggers = triggers || {};
+	this.statusModifier = statusModifier || {};
 	
 	for(var i=0; i<spaces.length; i++){
 		this.spaces[(i+1)] = spaces[i];
@@ -17,12 +18,14 @@ function Maze(character, size, start, end, spaces, labels, triggers){
 };
 
 Maze.prototype.baseTriggers = {
-	'start': function(){
-		this.status = {
+	'start': function(data){
+		var statusModifier = data || {};
+		this.status = $.extend({}, {
 			stars: {},
 			starNumber: 0,
-			position: this.start
-		};
+			position: this.start,
+			remainingMovements: 5 //TODO da modificare con il valore di movimento del personaggio che inizia
+		}, statusModifier);
 	}	
 };
 
@@ -31,12 +34,12 @@ Maze.prototype.setLevelGUI = function(levelGUI){
 	levelGUI.setMaze(this);
 };
 
-Maze.prototype.trigger = function(triggerName){
+Maze.prototype.trigger = function(triggerName, data){
 	if(this.baseTriggers[triggerName]){
-		this.baseTriggers[triggerName].call(this);
+		this.baseTriggers[triggerName].call(this, data);
 	}
 	if(this.triggers[triggerName]){
-		this.triggers[triggerName].call(this);
+		this.triggers[triggerName].call(this, data);
 	}
 };
 
@@ -86,27 +89,28 @@ Maze.prototype.calculatePath = function(start, end){
 		
 		while(path.length < baseX + baseY){
 			if(xPath > yPath) {
-				actualPosition = this.spaces[actualPosition].adiacents[xMovement-1];
+				actualPosition = this.spaces[actualPosition].adiacents[xMovement];
 				path.push(xMovement);
 				yPath += 2*baseY;
 			} else if(xPath < yPath) {
-				actualPosition = this.spaces[actualPosition].adiacents[yMovement-1];
+				actualPosition = this.spaces[actualPosition].adiacents[yMovement];
 				path.push(yMovement);
 				xPath += 2*baseX;
 			} else {
 				var preferredMovement = baseY >= baseX ? yMovement : xMovement;
-				actualPosition = this.spaces[actualPosition].adiacents[preferredMovement-1];
-				if(actualPosition != 0){
+				var futurePosition = this.spaces[actualPosition].adiacents[preferredMovement];
+				if(futurePosition != 0){
 					path.push(preferredMovement);
 					baseY >= baseX ? xPath += 2*baseX : yPath += 2*baseY;  
 				} else {
 					preferredMovement = baseY >= baseX ? xMovement : yMovement;
-					actualPosition = this.spaces[actualPosition].adiacents[preferredMovement-1];
-					if(actualPosition != 0){
+					futurePosition = this.spaces[actualPosition].adiacents[preferredMovement];
+					if(futurePosition != 0){
 						path.push(preferredMovement);
-						baseY >= baseX ? xPath += 2*baseX : yPath += 2*baseY;  
+						baseY >= baseX ? yPath += 2*baseY : xPath += 2*baseX;  
 					}
 				}
+				actualPosition = futurePosition;
 			}
 			
 			if(actualPosition == 0){
@@ -442,14 +446,15 @@ Maze.prototype.render = function(container){
 		}
 	});
 	
-	self.trigger('start');
+	self.trigger('start', this.statusModifier);
 };
 
 
 var pathRenderer = {
 		
 	css: {
-		'background-image': '-webkit-linear-gradient(#f1a165, #f36d0a)',
+		//'background-image': '-webkit-linear-gradient(#f1a165, #f36d0a)',
+		'background-color': '#f36d0a',
 		'border-style': 'solid',
 		'border-width': '0px'
 	},
@@ -479,7 +484,7 @@ var pathRenderer = {
 			};
 			
 			// construct the segment
-			var segment = $('<div class="absolute"></div>');
+			var segment = $('<div class="absolute" pd="width" pdv="' + segmentDimensions['width'] + '"></div>');
 			
 			// apply the css rules
 			segment.css(this.css);
@@ -491,35 +496,45 @@ var pathRenderer = {
 			// append the segment to the container
 			container.append(segment);
 		} else {
-			var segmentLength = 0;
-			var direction = -1;
-			var startIndex = 0;
-			var endIndex = 0;
+			var directions = [];
 			for(var i=0; i<path.length-1; i++){
-				var newDirection = maze.getDirection(path[i], path[i+1]);
-				if(direction == -1 || newDirection == direction) {
-					endIndex = i+1;
-					direction = newDirection;
-					segmentLength++;
-					continue;
+				directions.push(maze.getDirection(path[i], path[i+1]));
+			}
+			
+			var index = 0;
+			while(index < directions.length){
+				var direction = directions[index];
+				
+				for(i=index+1; i<directions.length; i++){
+					if(directions[i] != direction) break;
 				}
 				
-				var index = startIndex;
-				if(direction == 3){
-					index = endIndex;
-				}
-				
-				var position = maze.spaces[path[index]].position;
+				var segmentLength = i - index;
+
+				var startSegment = (direction == 0 || direction == 3) ? i : index;
+				var position = maze.spaces[path[startSegment]].position;
+				var isVerticalSegment = direction == 0 || direction == 2;
 				
 				var segmentDimensions = {
 					'top': (position[0] * caseSize) + (caseSize / 2) - (caseSize * this.startRadiusPercentage / 100),
 					'left': (position[1] * caseSize) + (caseSize / 2) - (caseSize * this.startRadiusPercentage / 100),
 					'border-radius': caseSize * this.startRadiusPercentage / 100,
 					'height': 2 * caseSize * this.startRadiusPercentage / 100,
-					'width': segmentLength * caseSize
+					'width': segmentLength * caseSize + (2 * caseSize * this.startRadiusPercentage / 100)
 				};
+
+				var principalDimension = 'width'; 
+				var principalDimensionValue = segmentDimensions[principalDimension];
 				
-				var segment = $('<div class="absolute" w="' + segmentDimensions['width'] + '" d="' + direction + '"></div>');
+				if(isVerticalSegment){
+					principalDimension = 'height';
+					var swap = segmentDimensions['height'];
+					segmentDimensions['height'] = segmentDimensions['width'];
+					segmentDimensions['width'] = swap;
+					principalDimensionValue = segmentDimensions[principalDimension];
+				}
+				
+				var segment = $('<div class="absolute" pd="' + principalDimension + '" pdv="' + principalDimensionValue + '" d="' + direction + '"></div>');
 				
 				segment.css(this.css);
 				segment.css(segmentDimensions);
@@ -528,34 +543,8 @@ var pathRenderer = {
 				
 				container.append(segment);
 				
-				segmentLength = 0;
-				direction = newDirection;
+				index = i;
 			}
-			
-			var index = startIndex;
-			if(direction == 3){
-				index = path.length - 1;
-			}
-			
-			var position = maze.spaces[path[index]].position;
-			
-			var segmentDimensions = {
-				'top': (position[0] * caseSize) + (caseSize / 2) - (caseSize * this.startRadiusPercentage / 100),
-				'left': (position[1] * caseSize) + (caseSize / 2) - (caseSize * this.startRadiusPercentage / 100),
-				'border-radius': caseSize * this.startRadiusPercentage / 100,
-				'height': 2 * caseSize * this.startRadiusPercentage / 100,
-				'width': segmentLength * caseSize + (2 * caseSize * this.startRadiusPercentage / 100)
-			};
-			
-			var segment = $('<div class="absolute" w="' + segmentDimensions['width'] + '" d="' + direction + '"></div>');
-			
-			segment.css(this.css);
-			segment.css(segmentDimensions);
-			
-			this.segments.push(segment);
-			
-			container.append(segment);
-			
 		}
 	},
 	
@@ -587,7 +576,8 @@ var pathRenderer = {
 			segment: self.segments[lastSegmentIndex],
 			spaces: 0
 		};
-		lastSegmentDescriptor['width'] = lastSegmentDescriptor.segment.attr('w');
+		lastSegmentDescriptor['pd'] = lastSegmentDescriptor.segment.attr('pd');
+		lastSegmentDescriptor['pdv'] = lastSegmentDescriptor.segment.attr('pdv');
 		lastSegmentDescriptor['direction'] = lastSegmentDescriptor.segment.attr('d');
 		
 		(function resolveLoop(time){
@@ -601,7 +591,8 @@ var pathRenderer = {
 					segment: self.segments[lastSegmentIndex],
 					spaces: lastSegmentDescriptor.spaces
 				};
-				lastSegmentDescriptor['width'] = lastSegmentDescriptor.segment.attr('w');
+				lastSegmentDescriptor['pd'] = lastSegmentDescriptor.segment.attr('pd');
+				lastSegmentDescriptor['pdv'] = lastSegmentDescriptor.segment.attr('pdv');
 				lastSegmentDescriptor['direction'] = lastSegmentDescriptor.segment.attr('d');
 			}
 			
@@ -609,23 +600,26 @@ var pathRenderer = {
 			var delta = now - lastTimestamp;
 			var pixel = delta / 1000 * pixelPerSecond;
 			lastTimestamp = now; 
-			lastSegmentDescriptor.width -= pixel;
+			lastSegmentDescriptor.pdv -= pixel;
 			
-			if(isNaN(lastSegmentDescriptor.width) || lastSegmentDescriptor.width <= 0){
-				lastSegmentDescriptor.width = 0;
+			if(isNaN(lastSegmentDescriptor.pdv) || lastSegmentDescriptor.pdv <= 0){
+				lastSegmentDescriptor.pdv = 0;
 				lastSegmentIndex++;
 			}
 
-			var newCss = {
-				'width': lastSegmentDescriptor.width
-			};
+			var newCss = {};
+			newCss[lastSegmentDescriptor['pd']] = lastSegmentDescriptor.pdv;
 			
 			if(lastSegmentDescriptor.direction == 1){
 				newCss['left'] = '+=' + pixel
+			} else if(lastSegmentDescriptor.direction == 2){
+				newCss['top'] = '+=' + pixel
 			}
 			lastSegmentDescriptor.segment.css(newCss);
 			
 			var spaces = Math.ceil((now - begin) / 1000 * self.pathResolutionVel);
+			
+			if(spaces > path.length) spaces = path.length;
 			
 			if(lastSegmentDescriptor.spaces < spaces){
 				for(var i=lastSegmentDescriptor.spaces; i<spaces; i++){
