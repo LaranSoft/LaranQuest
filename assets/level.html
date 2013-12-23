@@ -8,7 +8,14 @@
 		<div data-role="page" id="level">
 			<div id="top">
 				<div id="levelStatus">
-					<div id="remainingMovements" class="absolute hidden">5</div>
+					<div class="levelStatusCell absolute">
+						<img id="remainingMovementsIcon" data-remainingMovements src="resources/images/ap.png" class="hidden"></img>
+					</div>
+					<div id="remainingMovements" data-remainingMovements class="levelStatusCell absolute trashhand hidden"></div>
+					<div class="levelStatusCell absolute">
+						<img id="remainingHealthIcon" data-remainingHealth src="resources/images/heart.png" class="hidden"></img>
+					</div>
+					<div id="remainingHealth" data-remainingHealth class="levelStatusCell absolute trashhand hidden"></div>
 					<div id="star1" class="absolute"></div>
 					<div id="star2" class="absolute"></div>
 					<div id="star3" class="absolute"></div>
@@ -21,7 +28,7 @@
 					var levelSelected = memory.load('levelSelected');
 					loader.loadScript('resources/js/level' + levelSelected + '.js', function(){
 						var level = window['level' + levelSelected];
-						level.setLevelGUI(new LevelGUI(1));
+						level.setLevelGUI(new LevelGUI(level.GUISettings));
 						level.render($('#middle'), level.statusModifier);
 					});
 				});

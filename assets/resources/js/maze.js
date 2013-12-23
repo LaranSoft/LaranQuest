@@ -1,18 +1,32 @@
-function Maze(character, size, start, end, spaces, labels, triggers, statusModifier){
+function Maze(options){
+	var defaultOptions = {
+		'character': '', 
+		'size': [0, 0], 
+		'start': 0, 
+		'end': 0, 
+		'spaces': {}, 
+		'labels': [], 
+		'triggers': {}, 
+		'statusModifier': {},
+		'GUISettings': {}
+	};
 	
-	this.character = character;
-	this.size = size;
-	this.start = start;
-	this.end = end;
+	options = $.extend({}, defaultOptions, options);
+	
+	this.character = options.character;
+	this.size = options.size;
+	this.start = options.start;
+	this.end = options.end;
 	this.spaces = {};
-	this.labels = labels || [];
+	this.labels = options.labels;
 	this.positions = {};
-	this.triggers = triggers || {};
-	this.statusModifier = statusModifier || {};
+	this.triggers = options.triggers;
+	this.statusModifier = options.statusModifier;
+	this.GUISettings = options.GUISettings;
 	
-	for(var i=0; i<spaces.length; i++){
-		this.spaces[(i+1)] = spaces[i];
-		var spacePosition = spaces[i].position;
+	for(var i=0; i<options.spaces.length; i++){
+		this.spaces[(i+1)] = options.spaces[i];
+		var spacePosition = options.spaces[i].position;
 		this.positions[spacePosition[0] + '-' + spacePosition[1]] = i+1;
 	}
 };
@@ -24,9 +38,34 @@ Maze.prototype.baseTriggers = {
 			stars: {},
 			starNumber: 0,
 			position: this.start,
-			remainingMovements: 5 //TODO da modificare con il valore di movimento del personaggio che inizia
+			characters: { 
+				'warrior': {
+					remainingHealth: 2     // TODO in realtà questo valore sarà completamente preso dal salvataggio
+				}
+			}
 		}, statusModifier);
-	}	
+	},
+	'select': function(data){
+		this.levelGUI.setRemainingMovements(this.status.characters[data.character].remainingMovements);
+		this.levelGUI.setRemainingHealth(this.status.characters[data.character].remainingHealth);
+	},
+	'startTurn': function(data){
+		this.status.characters.warrior.remainingMovements = 5; // TODO in realtà questo valore sarà completamente preso dal salvataggio
+		this.activableCharacters = {'warrior': true}; // ovviamente il valore non è hardcoded
+	},
+	'endTurn': function(data){
+		delete this.activableCharacters[data.character];
+		var self = this;
+		if($.isEmptyObject(this.activableCharacters)){
+			//TODO in realtà bisogna ciclare su tutti i personaggi per fare l'animazione della perdita del punto vita
+			this.levelGUI.damage(data.character, 1, function(){ //WARN: magic number
+				self.status.characters[data.character].remainingHealth--;
+				self.trigger('startTurn');
+				self.trigger('select', {character: data.character});
+			});
+			
+		}
+	}
 };
 
 Maze.prototype.setLevelGUI = function(levelGUI){
@@ -220,7 +259,7 @@ Maze.prototype.render = function(container){
 	tokenTop = self.spaces[self.start].position[0] * caseSize + (caseSize * (1 - characterTokenPadding) / 2);
 	tokenLeft = self.spaces[self.start].position[1] * caseSize + (caseSize * (1 - characterTokenPadding) / 2);
 	
-	var token = $('<img class="token scenicElement" src="resources/images/' + self.character + '.png" width="' + (caseSize*characterTokenPadding) + '" height="' + (caseSize*characterTokenPadding) + '" style="top: ' + tokenTop + 'px; left: ' + tokenLeft + 'px;"/>');
+	var token = $('<img class="token scenicElement" character="' + self.character + '" src="resources/images/' + self.character + '.png" width="' + (caseSize*characterTokenPadding) + '" height="' + (caseSize*characterTokenPadding) + '" style="top: ' + tokenTop + 'px; left: ' + tokenLeft + 'px;"/>');
 	mazeWrapper.append(token);
 	
 	var actualPosition = self.start;
@@ -228,8 +267,6 @@ Maze.prototype.render = function(container){
 	var actualDragPosition = actualPosition;
 	
 	//#LOG#console.log(JSON.stringify(mazeOffset));
-	
-	//var remainingMovements = 5;
 	
 	var MAZE_STATUS_CLONED;
 	var MOVEMENT_DESCRIPTOR;
@@ -245,6 +282,9 @@ Maze.prototype.render = function(container){
 		initiate: function(){
 			
 			MAZE_STATUS_CLONED = $.extend(true, {}, self.status);
+			MAZE_STATUS_CLONED.activeCharacter = token.attr('character');
+
+			self.trigger('select', {character: MAZE_STATUS_CLONED.activeCharacter});
 			
 			MOVEMENT_DESCRIPTOR = {
 				startPosition: MAZE_STATUS_CLONED.position,
@@ -383,18 +423,18 @@ Maze.prototype.render = function(container){
 								throw 'invalid path variation';
 							} 
 							
-							self.spaces[-pathVariation].rollback(MAZE_STATUS_CLONED);
+							self.spaces[-pathVariation].rollback(MAZE_STATUS_CLONED, self.levelGUI);
 							
 							MOVEMENT_DESCRIPTOR.actualPosition = MOVEMENT_DESCRIPTOR.path[MOVEMENT_DESCRIPTOR.path.length-1];
 							
 						} else {
 							var direction = self.getDirection(MOVEMENT_DESCRIPTOR.actualPosition, pathVariation);
 							
-							var step = self.spaces[MOVEMENT_DESCRIPTOR.actualPosition].onExit(MAZE_STATUS_CLONED, direction);
+							var step = self.spaces[MOVEMENT_DESCRIPTOR.actualPosition].onExit(MAZE_STATUS_CLONED, direction, self.levelGUI);
 							if(step.canExit == true){
 								//#LOG#console.log('entering in ' + targetPosition + ', direction: ' + enteringDirection);
 								
-								step = self.spaces[pathVariation].onEnter(MAZE_STATUS_CLONED, direction);
+								step = self.spaces[pathVariation].onEnter(MAZE_STATUS_CLONED, direction, self.levelGUI);
 								
 								if(step.canEnter == true){
 									MOVEMENT_DESCRIPTOR.actualPosition = pathVariation;
@@ -419,14 +459,13 @@ Maze.prototype.render = function(container){
 				
 				pathRenderer.destroyPath();
 				MOVEMENT_DESCRIPTOR.actualPosition = MOVEMENT_DESCRIPTOR.startPosition;
-				
+				self.trigger('select', {character: MAZE_STATUS_CLONED.activeCharacter});
 			} else {
 			
 				self.status = MAZE_STATUS_CLONED;
 				self.status.position = MOVEMENT_DESCRIPTOR.actualPosition;
 
 				pathRenderer.resolvePath(MOVEMENT_DESCRIPTOR.path, self, caseSize);
-				
 			}
 			
 			var tokenTop = self.spaces[MOVEMENT_DESCRIPTOR.actualPosition].position[0] * caseSize + (caseSize * (1 - characterTokenPadding) / 2);
@@ -438,8 +477,7 @@ Maze.prototype.render = function(container){
 					top: tokenTop, 
 					'height': (caseSize*characterTokenPadding),
 					'width': (caseSize*characterTokenPadding),
-					opacity: 1,
-					'z-index': '0'
+					opacity: 1
 				});
 			}, 0);
 			
@@ -623,7 +661,12 @@ var pathRenderer = {
 			
 			if(lastSegmentDescriptor.spaces < spaces){
 				for(var i=lastSegmentDescriptor.spaces; i<spaces; i++){
-					maze.spaces[path[i]].overpass(maze.spaces[path[i]], maze.levelGUI);
+					maze.spaces[path[i]].overpass({
+						maze: maze,
+						status: maze.status,
+						space: maze.spaces[path[i]], 
+						levelGUI: maze.levelGUI
+					});
 				}
 				lastSegmentDescriptor.spaces = spaces;
 			}

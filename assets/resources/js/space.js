@@ -9,20 +9,31 @@ Space.prototype.setDOMSpaceElement = function($el){
 	this.$el = $el;
 };
 
-Space.prototype.onEnter = function(status, direction){
-	status.remainingMovements --;
+Space.prototype.onEnter = function(status, direction, levelGUI){
+	var activeCharacter = status.characters[status.activeCharacter];
+	activeCharacter.remainingMovements --;
+	levelGUI.setRemainingMovements(activeCharacter.remainingMovements);
+	this.isEndTurnSpace = activeCharacter.remainingMovements <= 0;
 	return {canEnter: true};
 };
 
-Space.prototype.onExit = function(status, direction){
-	console.log('remainingMovements: ' + status.remainingMovements);
-	return {canExit: isNaN(status.remainingMovements) || status.remainingMovements > 0};
+Space.prototype.onExit = function(status, direction, levelGUI){
+	var activeCharacter = status.characters[status.activeCharacter];
+	return {canExit: isNaN(activeCharacter.remainingMovements) || activeCharacter.remainingMovements > 0};
 };
 
-Space.prototype.rollback = function(status, direction){
-	status.remainingMovements++;
+Space.prototype.rollback = function(status, levelGUI){
+	var activeCharacter = status.characters[status.activeCharacter];
+	activeCharacter.remainingMovements++;
+	this.isEndTurnSpace = false;
+	levelGUI.setRemainingMovements(activeCharacter.remainingMovements);
 };
-Space.prototype.overpass = function(space, levelGUI){};
+Space.prototype.overpass = function(context){
+	if(this.isEndTurnSpace === true){
+		context.maze.trigger('endTurn', {character: context.status.activeCharacter});
+	}
+	this.isEndTurnSpace = false;
+};
 
 /******************************************************
  * 
@@ -40,26 +51,26 @@ function ExpSpace(position, walls, adiacents, expIndex){
 ExpSpace.prototype = Object.create(Space.prototype);
 ExpSpace.prototype.constructor = ExpSpace;
 
-ExpSpace.prototype.onEnter = function(status, direction) {
+ExpSpace.prototype.onEnter = function(status, direction, levelGUI) {
 	if(!this.overpassed){
 		status.stars[this.expIndex] = true;
 		status.starNumber++;
 	}
 	return Space.prototype.onEnter.apply(this, arguments);
 };
-ExpSpace.prototype.rollback = function(status, direction) {
+ExpSpace.prototype.rollback = function(status, levelGUI) {
 	if(!this.overpassed){
 		status.stars[this.expIndex] = false;
 		status.starNumber--;
 	}
 	return Space.prototype.rollback.apply(this, arguments);
 };
-ExpSpace.prototype.overpass = function(space, levelGUI) {
+ExpSpace.prototype.overpass = function(context) {
 	Space.prototype.overpass.apply(this, arguments);
 	if(!this.overpassed){
 		this.overpassed = true;
-		levelGUI.addStar(this.expIndex); 
-		space.$el.exp.transition({'scale': 3, 'opacity': 0, 'z-index': 100}, 600, function(){space.$el.exp.remove()});
+		context.levelGUI.addStar(this.expIndex); 
+		context.space.$el.exp.transition({'scale': 3, 'opacity': 0, 'z-index': 100}, 600, function(){context.space.$el.exp.remove()});
 	}
 };
 
@@ -77,7 +88,6 @@ function ExitSpace(position, walls, adiacents){
 ExitSpace.prototype = Object.create(Space.prototype);
 ExitSpace.prototype.constructor = ExitSpace;
 
-ExitSpace.prototype.overpass = function(space, levelGUI) {
-	Space.prototype.overpass.apply(this, arguments);
-	levelGUI.completeLevel();
+ExitSpace.prototype.overpass = function(context) {
+	context.levelGUI.completeLevel();
 };

@@ -61,13 +61,34 @@
 #star2 {right: 50px;}
 #star3 {right: 5px;}
 
-#remainingMovements {
+.levelStatusCell {
+	width: 50px;
+	height: 50px;
+}
+
+#remainingMovementsIcon {
+	width: 46px;
+	position: relative;
+	top: 2px;
+	left: 2px;
+}
+
+#remainingMovements,
+#remainingHealth {
 	color: white;
-	font-size: 48px;
-	left: 5px;
-	width: 45px;
-	height: 45px;
-	background: url('../images/starVoid.png');
+	font-size: 35px;
+	line-height: 50px;
+	text-align: center;
+}
+
+#remainingMovements {left: 0px;}
+#remainingHealth {left: 50px;}
+
+#remainingHealthIcon {
+	width: 46px;
+	position: relative;
+	top: 2px;
+	left: 52px;
 }
 
 .scenicElement {z-index: 10;}
