@@ -37,6 +37,7 @@ Maze.prototype.baseTriggers = {
 		this.status = $.extend({}, {
 			stars: {},
 			starNumber: 0,
+			spaces: {}, 
 			position: this.start,
 			characters: { 
 				'warrior': {
@@ -59,12 +60,26 @@ Maze.prototype.baseTriggers = {
 		if($.isEmptyObject(this.activableCharacters)){
 			//TODO in realtà bisogna ciclare su tutti i personaggi per fare l'animazione della perdita del punto vita
 			this.levelGUI.damage(data.character, 1, function(){ //WARN: magic number
-				self.status.characters[data.character].remainingHealth--;
-				self.trigger('startTurn');
-				self.trigger('select', {character: data.character});
+				if(--self.status.characters[data.character].remainingHealth <= 0){
+					self.levelGUI.kill(data.character, function(){
+						self.trigger('reload');
+					});
+				} else {
+					self.trigger('startTurn');
+					self.trigger('select', {character: data.character});
+				}
 			});
 			
 		}
+	},
+	'reload': function(data){
+		var self = this;
+		$('#level').effect('fade', 200, function(){
+			$('#level').show();
+			self.$container.html('');
+			self.render(self.$container, self.statusModifier);
+			self.levelGUI.reset();
+		});
 	}
 };
 
@@ -164,6 +179,8 @@ Maze.prototype.calculatePath = function(start, end){
 Maze.prototype.render = function(container){
 
 	var self = this;
+	
+	this.$container = container; 
 	
 	var caseSize = 0;
 	

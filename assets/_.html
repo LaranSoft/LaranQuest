@@ -14,6 +14,7 @@
 		<script type="text/javascript" src="resources/js/lib/jquery.pep.custom.min.js"></script>
 		<script type="text/javascript" src="resources/js/lib/jquery.transit.min.js"></script>
 		<script type="text/javascript" src="resources/js/lib/tween.min.js"></script>
+		<script type="text/javascript" src="resources/js/lib/jquery-ui-1.10.3.custom.min.js"></script>
 		
 		<script type="text/javascript" src="resources/js/levelGUI.js"></script>
 		<script type="text/javascript" src="resources/js/maze.js"></script>
@@ -21,6 +22,7 @@
 		<script type="text/javascript" src="resources/js/loader.js"></script>
 		<script type="text/javascript" src="resources/js/memory.js"></script>
 		<script type="text/javascript" src="resources/js/label.js"></script>
+		<script type="text/javascript" src="resources/js/textUtils.js"></script>
 		
 		<script type="text/javascript" src="resources/js/desktopConfig.js"></script>
 		
@@ -29,9 +31,7 @@
 		<div data-role="page" id="homePage">
 			<div data-role="header"><h1>Welcome</h1></div>
 			<div data-role="content">
-				<p id="p">
-					Welcome to LaranQuest
-				</p>
+				<p class="justATest">Welcome to LaranQuest</p>
 				<ul data-role="listview" data-inset="true">
 					<li><a href="levelSelection.html" data-transition="slide">Play the tutorial</a></li>
 				</ul>
@@ -45,6 +45,22 @@
 					$('#resetGameState').on('click', function(){
 						memory.reset();
 					});
+					
+					//XXX just a test :)
+					var css = {
+						'font-family': 'trashhand',
+						'font-weight': 'bold',
+						'width': '500px',
+						'height': '200px'
+					};
+					var p = $('.justATest');
+					p.css(css);
+				
+					var fontSize = textUtils.getMaxFontSize('Welcome to LaranQuest', css, {width: 500, height: 200});
+				
+					p.css('font-size', fontSize);
+					
+					p.text('Welcome to LaranQuest');
 				});
 			</script>
 			

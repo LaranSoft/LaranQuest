@@ -14,12 +14,19 @@ function LevelGUI(options){
 	this.$star3 = $('#star3');
 	this.$body = $('#level');
 	
+	options.showRemainingMovements !== false && $('[data-remainingMovements]').removeClass('hidden');
+	options.showRemainingHealth !== false && $('[data-remainingHealth]').removeClass('hidden');
+	
+	this.reset();
+};
+
+LevelGUI.prototype.reset = function(){
 	this.star1 = false;
 	this.star2 = false;
 	this.star3 = false;
-	
-	options.showRemainingMovements !== false && $('[data-remainingMovements]').removeClass('hidden');
-	options.showRemainingHealth !== false && $('[data-remainingHealth]').removeClass('hidden');
+	this.$star1.removeClass('taken');
+	this.$star2.removeClass('taken');
+	this.$star3.removeClass('taken');
 };
 
 LevelGUI.requestAnimationFrame = function(callback) {
@@ -42,6 +49,11 @@ LevelGUI.prototype.setRemainingMovements = function(remainingMovements){
 };
 LevelGUI.prototype.setRemainingHealth = function(remainingHealth){
 	this.$remainingHealth.text(remainingHealth);
+};
+
+LevelGUI.prototype.kill = function(character, callback){
+	var originalToken = $('[character=' + character + ']');
+	originalToken.toggle('explode', callback);
 };
 
 LevelGUI.prototype.damage = function(character, damageValue, callback){
@@ -71,7 +83,8 @@ LevelGUI.prototype.damage = function(character, damageValue, callback){
 	damageToken.css({top: t, left: l, width: w, height: h});
 	
 	originalToken.parent().append(damageToken);
-	damageToken.transition({'scale': 1}, 600)
+	originalToken.effect('shake', {distance: 2, times: 3});
+	damageToken.transition({'scale': 1, 'y': '-=50', 'opacity': 0.6}, 600)
 	.transition({opacity: 0}, 300, function(){
 		damageToken.remove();
 		callback();
