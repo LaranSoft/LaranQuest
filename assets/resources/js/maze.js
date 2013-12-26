@@ -5,10 +5,12 @@ function Maze(options){
 		'start': 0, 
 		'end': 0, 
 		'spaces': {}, 
-		'labels': [], 
+		'labels': [],
+		'images': [],
 		'triggers': {}, 
 		'statusModifier': {},
-		'GUISettings': {}
+		'GUISettings': {},
+		'tutorials': []
 	};
 	
 	options = $.extend({}, defaultOptions, options);
@@ -19,10 +21,12 @@ function Maze(options){
 	this.end = options.end;
 	this.spaces = {};
 	this.labels = options.labels;
+	this.images = options.images;
 	this.positions = {};
 	this.triggers = options.triggers;
 	this.statusModifier = options.statusModifier;
 	this.GUISettings = options.GUISettings;
+	this.tutorials = options.tutorials;
 	
 	for(var i=0; i<options.spaces.length; i++){
 		this.spaces[(i+1)] = options.spaces[i];
@@ -35,13 +39,14 @@ Maze.prototype.baseTriggers = {
 	'start': function(data){
 		var statusModifier = data || {};
 		this.status = $.extend({}, {
+			turn: 0,
 			stars: {},
 			starNumber: 0,
 			spaces: {}, 
 			position: this.start,
 			characters: { 
 				'warrior': {
-					remainingHealth: 2     // TODO in realtà questo valore sarà completamente preso dal salvataggio
+					remainingHealth: 2     // TODO in realta'� questo valore sara' completamente preso dal salvataggio
 				}
 			}
 		}, statusModifier);
@@ -51,6 +56,7 @@ Maze.prototype.baseTriggers = {
 		this.levelGUI.setRemainingHealth(this.status.characters[data.character].remainingHealth);
 	},
 	'startTurn': function(data){
+		this.status.turn++;
 		this.status.characters.warrior.remainingMovements = 5; // TODO in realtà questo valore sarà completamente preso dal salvataggio
 		this.activableCharacters = {'warrior': true}; // ovviamente il valore non è hardcoded
 	},
@@ -58,7 +64,7 @@ Maze.prototype.baseTriggers = {
 		delete this.activableCharacters[data.character];
 		var self = this;
 		if($.isEmptyObject(this.activableCharacters)){
-			//TODO in realtà bisogna ciclare su tutti i personaggi per fare l'animazione della perdita del punto vita
+			//TODO in realta'� bisogna ciclare su tutti i personaggi per fare l'animazione della perdita del punto vita
 			this.levelGUI.damage(data.character, 1, function(){ //WARN: magic number
 				if(--self.status.characters[data.character].remainingHealth <= 0){
 					self.levelGUI.kill(data.character, function(){
@@ -102,6 +108,22 @@ Maze.prototype.getDirection = function(start, end){
 };
 Maze.prototype.getPosition = function(start, direction){
 	return this.spaces[start].adiacents[direction];
+};
+
+Maze.prototype.showTutorial = function(tutorialNames, index){
+	index = index || 0;
+	var self = this;
+	if(index < tutorialNames.length){
+		var tutorial = self.tutorials[tutorialNames[index]];
+		if(!tutorial.isAlreadySeen()){
+			this.levelGUI.showTutorial(tutorial, function(){
+				tutorial.setAlreadySeen();
+				self.showTutorial(tutorialNames, ++index);
+			});
+		} else {
+			self.showTutorial(tutorialNames, ++index);
+		}
+	}
 };
 
 Maze.prototype.calculatePath = function(start, end){
@@ -263,7 +285,27 @@ Maze.prototype.render = function(container){
 		var labelHeight = (label.size[0] * caseSize);
 		var labelWidth = (label.size[1] * caseSize);
 	
-		var cas = $('<img class="absolute" src="resources/images/labels/' + label.fileName + '.png" style="width: ' + labelWidth + 'px; height: ' + labelHeight + 'px; top: ' + labelTop + 'px; left: ' + labelLeft + 'px;"></img>');
+		var box = {width: labelWidth, height: labelHeight};
+		var maxFontAndBox = textUtils.getMaxFontSize(label.text, {
+			'font-family': 'trashhand',
+		}, box);
+		
+		var paddingTop = labelHeight - maxFontAndBox.box.height;
+		var paddingLeft = Math.floor((labelWidth - maxFontAndBox.box.width) / 2);
+		
+		var cas = $('<span class="absolute trashhand mazeLabel" style="width: ' + labelWidth + 'px; height: ' + labelHeight + 'px; top: ' + labelTop + 'px; left: ' + labelLeft + 'px; font-size: ' + maxFontAndBox.fontSize + 'px; padding-top: ' + paddingTop + 'px; padding-left: ' + paddingLeft + 'px;">' + label.text + '</span>');
+		mazeWrapper.append(cas);
+	}
+	
+	for(var i=0; i<self.images.length; i++){
+		var image = self.images[i];
+		
+		var imageTop = (image.position[0] * caseSize);
+		var imageLeft = (image.position[1] * caseSize);
+		var imageHeight = (image.size[0] * caseSize);
+		var imageWidth = (image.size[1] * caseSize);
+	
+		var cas = $('<img class="absolute" src="resources/images/labels/' + image.fileName + '.png" style="width: ' + imageWidth + 'px; height: ' + imageHeight + 'px; top: ' + imageTop + 'px; left: ' + imageLeft + 'px;"></img>');
 		mazeWrapper.append(cas);
 	}
 	

@@ -12,9 +12,14 @@ var level1 = new Maze({
 	    new ExitSpace([2, 5], '01111100', [0, 0, 0, 5])
 	],
 	labels: [
-	    new Label([0, 0], [2, 3], 'YouAreHere'),
-	    new Label([0, 4], [2, 2], 'Exit'),
-	    new Label([3, 0], [2, 6], 'SlideYourFingerToMove')
+	    new Label([0, 0], [1, 3], 'you are here'),
+	    new Label([0, 4], [1, 2], 'exit'),
+	    new Label([4, 0], [1, 6], 'slide your finger to move')
+    ],
+    images: [
+ 	    new Image([1, 0], [1, 1], 'Arrow_BL'),
+ 	    new Image([1, 5], [1, 1], 'Arrow_BR'),
+ 	    new Image([3, 0], [1, 6], 'SlideYourFingerToMove')
     ],
     statusModifier: {			
 		characters: {warrior: {remainingMovements: NaN}}
@@ -22,5 +27,13 @@ var level1 = new Maze({
     GUISettings: {
     	showRemainingMovements: false,
     	showRemainingHealth: false
+    },
+    tutorials: {
+    	'stars': new Tutorial('threeStarsTutorial', 'stars', 'In each stage there are three stars. Try to collect them all.')
+    },
+    triggers: {
+    	'start': function(data){
+    		this.showTutorial(['stars']);
+    	}
     }
 });

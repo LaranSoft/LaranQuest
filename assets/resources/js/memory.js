@@ -18,6 +18,9 @@ var memory = {
 		stages.push({'locked': false});
 		stages.push({'locked': true});
 		this.save('stages', stages);
+		
+		this.save('tutorials', {});
+		
 		this.save('inited', true);
 	}
 };

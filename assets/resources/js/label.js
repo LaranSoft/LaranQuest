@@ -1,7 +1,7 @@
-function Label(position, size, fileName){
+function Label(position, size, text){
 	
 	this.position = position;
 	this.size = size;
-	this.fileName = fileName;
+	this.text = text;
 	
 };

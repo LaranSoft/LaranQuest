@@ -151,3 +151,22 @@
 	background-image: -webkit-linear-gradient(#f1a165, #f36d0a);
 	border-radius: 25px;
 }
+
+.mazeLabel {
+	color: black;
+	text-shadow: none;
+	white-space: nowrap;
+}
+
+.tutorialParagraph {
+	color: white;
+}
+
+.tutorialImage {
+	float: left;
+	padding: 10px;
+}
+
+.tutorialContainer {
+	padding: 25px;
+}

@@ -51,6 +51,51 @@ LevelGUI.prototype.setRemainingHealth = function(remainingHealth){
 	this.$remainingHealth.text(remainingHealth);
 };
 
+LevelGUI.prototype.showTutorial = function(tutorial, callback){
+	var self = this;
+	
+	var blockMask = $('<div id="blockMask" class="absolute tutorialContainer"></div>');
+	
+	this.$body.append(blockMask);
+	$('.scenicElement').each(function(index, element){
+		$(element).attr('oldZIndex', $(element).css('z-index')).css('z-index', 'auto');
+	});
+	blockMask.transition({
+		'opacity': 0.9
+	}, 600, function(){
+		
+		var availableW = self.$body.width();
+		
+		var padding = 10;
+		availableW -= 2*padding;
+		
+		var imageW = availableW / 3;
+		
+		var paragraph = $('<p class="tutorialParagraph" style="font-size: ' + (imageW / 3) + 'px;"></p>');
+		
+		var image = $('<img class="tutorialImage" src="resources/images/tutorials/' + tutorial.image + '.png" width="' + imageW + '" height="' + imageW + '"/>');
+		paragraph.append(image);
+		paragraph.append(tutorial.text);
+		blockMask.append(paragraph);
+		
+		var okButton = $('<button data-role="button" data-theme="a">I got it</button>');
+		blockMask.append(okButton);
+		okButton.button();
+		
+		okButton.on('click', function(){
+			blockMask.transition({
+				'opacity': 0
+			}, 600, function(){
+				blockMask.remove();
+				$('.scenicElement').each(function(index, element){
+					$(element).css('z-index', $(element).attr('oldZIndex')).removeAttr('oldZIndex');
+				});
+				callback();
+			});
+		})
+	});
+};
+
 LevelGUI.prototype.kill = function(character, callback){
 	var originalToken = $('[character=' + character + ']');
 	originalToken.toggle('explode', callback);
