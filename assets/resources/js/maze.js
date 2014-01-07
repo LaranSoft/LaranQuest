@@ -132,34 +132,22 @@ Maze.prototype.render = function(container){
 		
 		caseDescription.setDOMSpaceElement(cas);
 		
-		if(caseDescription.types){
-			for(var typeIndex = 0; typeIndex < caseDescription.types.length; typeIndex++){
-				var type = caseDescription.types[typeIndex];
-				switch(type){
-					case 'exp': {
-						var tokenTop = caseTop + (caseSize * (1 - expTokenPadding) / 2);
-						var tokenLeft = caseLeft + (caseSize * (1 - expTokenPadding) / 2);
-						cas.exp = $('<img class="token exp scenicElement" src="resources/images/exp.png" style="width: ' + (caseSize*expTokenPadding) + 'px; height: ' + (caseSize*expTokenPadding) + 'px; top: ' + tokenTop + 'px; left: ' + tokenLeft + 'px;"/>');
-						mazeWrapper.append(cas.exp);
-					}
-				}
-			}
+		if(caseDescription.blocked === true){
+			var tokenTop = caseTop + (caseSize * (1 - expTokenPadding) / 2);
+			var tokenLeft = caseLeft + (caseSize * (1 - expTokenPadding) / 2);
+			cas.floor = $('<img class="floorElement" src="resources/images/blocked.png" style="width: ' + (caseSize*expTokenPadding) + 'px; height: ' + (caseSize*expTokenPadding) + 'px; top: ' + tokenTop + 'px; left: ' + tokenLeft + 'px;"/>');
+			mazeWrapper.append(cas.floor);
+		}
+		
+		if(caseDescription.scenicElement){
+			var tokenTop = caseTop + (caseSize * (1 - expTokenPadding) / 2);
+			var tokenLeft = caseLeft + (caseSize * (1 - expTokenPadding) / 2);
+			cas.scenicElement = $('<img class="scenicElement" src="resources/images/' + caseDescription.scenicElement + '.png" style="width: ' + (caseSize*expTokenPadding) + 'px; height: ' + (caseSize*expTokenPadding) + 'px; top: ' + tokenTop + 'px; left: ' + tokenLeft + 'px;"/>');
+			mazeWrapper.append(cas.scenicElement);
 		}
 		
 		caseIndex++;
 	}
-	
-	var tokenTop = self.spaces[self.end].position[0] * caseSize + (caseSize * (1 - exitTokenPadding) / 2);
-	var tokenLeft = self.spaces[self.end].position[1] * caseSize + (caseSize * (1 - exitTokenPadding) / 2);
-	
-	var exit = $('<img class="token scenicElement" src="resources/images/exit.png" width="' + (caseSize*exitTokenPadding) + '" height="' + (caseSize*exitTokenPadding) + '" style="top: ' + tokenTop + 'px; left: ' + tokenLeft + 'px;"/>');
-	mazeWrapper.append(exit);
-	
-	tokenTop = self.spaces[self.start].position[0] * caseSize + (caseSize * (1 - characterTokenPadding) / 2);
-	tokenLeft = self.spaces[self.start].position[1] * caseSize + (caseSize * (1 - characterTokenPadding) / 2);
-	
-	var token = $('<img class="token scenicElement" character="' + self.character + '" src="resources/images/' + self.character + '.png" width="' + (caseSize*characterTokenPadding) + '" height="' + (caseSize*characterTokenPadding) + '" style="top: ' + tokenTop + 'px; left: ' + tokenLeft + 'px;"/>');
-	mazeWrapper.append(token);
 	
 	//#LOG#console.log(JSON.stringify(mazeOffset));
 	

@@ -91,7 +91,8 @@
 	left: 52px;
 }
 
-.scenicElement {z-index: 10;}
+.scenicElement {z-index: 10; position: absolute;}
+.floorElement {z-index: 10; position: absolute;}
 
 #middle {
 	top: 60px;
@@ -134,12 +135,22 @@
   z-index: 100;
 }
 
-.w01000100 {background-image: url('../images/01000100.png');}
-.w01111100 {background-image: url('../images/01111100.png');}
-.w11000111 {background-image: url('../images/11000111.png');}
-.w01110010 {background-image: url('../images/01110010.png');}
-.w00010001 {background-image: url('../images/00010001.png');}
-.w00100111 {background-image: url('../images/00100111.png');}
+.w0000 {background-image: url('../images/0000.png');}
+.w0001 {background-image: url('../images/0001.png');}
+.w0010 {background-image: url('../images/0010.png');}
+.w0011 {background-image: url('../images/0011.png');}
+.w0100 {background-image: url('../images/0100.png');}
+.w0101 {background-image: url('../images/0101.png');}
+.w0110 {background-image: url('../images/0110.png');}
+.w0111 {background-image: url('../images/0111.png');}
+.w1000 {background-image: url('../images/1000.png');}
+.w1001 {background-image: url('../images/1001.png');}
+.w1010 {background-image: url('../images/1010.png');}
+.w1011 {background-image: url('../images/1011.png');}
+.w1100 {background-image: url('../images/1100.png');}
+.w1101 {background-image: url('../images/1101.png');}
+.w1110 {background-image: url('../images/1110.png');}
+.w1111 {background-image: url('../images/1111.png');}
 
 .progressBarContainer {
 	background-color: #555;
