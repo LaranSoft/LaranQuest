@@ -1,33 +1,19 @@
 function Maze(options){
 	var defaultOptions = {
-		'character': '', 
 		'size': [0, 0], 
-		'start': 0, 
-		'end': 0, 
 		'spaces': {}, 
-		'labels': [],
-		'images': [],
 		'triggers': {}, 
-		'statusModifier': {},
-		'GUISettings': {},
 		'tutorials': []
 	};
 	
 	options = $.extend({}, defaultOptions, options);
 	
-	this.character = options.character;
 	this.size = options.size;
-	this.start = options.start;
-	this.end = options.end;
-	this.spaces = {};
-	this.labels = options.labels;
-	this.images = options.images;
-	this.positions = {};
 	this.triggers = options.triggers;
-	this.statusModifier = options.statusModifier;
-	this.GUISettings = options.GUISettings;
 	this.tutorials = options.tutorials;
 	
+	this.spaces = {};
+	this.positions = {};
 	for(var i=0; i<options.spaces.length; i++){
 		this.spaces[(i+1)] = options.spaces[i];
 		var spacePosition = options.spaces[i].position;
@@ -36,48 +22,6 @@ function Maze(options){
 };
 
 Maze.prototype.baseTriggers = {
-	'start': function(data){
-		var statusModifier = data || {};
-		this.status = $.extend({}, {
-			turn: 0,
-			stars: {},
-			starNumber: 0,
-			spaces: {}, 
-			position: this.start,
-			characters: { 
-				'warrior': {
-					remainingHealth: 2     // TODO in realta'  questo valore sara' completamente preso dal salvataggio
-				}
-			}
-		}, statusModifier);
-	},
-	'select': function(data){
-		this.levelGUI.setRemainingMovements(this.status.characters[data.character].remainingMovements);
-		this.levelGUI.setRemainingHealth(this.status.characters[data.character].remainingHealth);
-	},
-	'startTurn': function(data){
-		this.status.turn++;
-		this.status.characters.warrior.remainingMovements = 5; // TODO in realtÃ  questo valore sarÃ  completamente preso dal salvataggio
-		this.activableCharacters = {'warrior': true}; // ovviamente il valore non Ã¨ hardcoded
-	},
-	'endTurn': function(data){
-		delete this.activableCharacters[data.character];
-		var self = this;
-		if($.isEmptyObject(this.activableCharacters)){
-			//TODO in realta'  bisogna ciclare su tutti i personaggi per fare l'animazione della perdita del punto vita
-			this.levelGUI.damage(data.character, 1, function(){ //WARN: magic number
-				if(--self.status.characters[data.character].remainingHealth <= 0){
-					self.levelGUI.kill(data.character, function(){
-						self.trigger('reload');
-					});
-				} else {
-					self.trigger('startTurn');
-					self.trigger('select', {character: data.character});
-				}
-			});
-			
-		}
-	},
 	'reload': function(data){
 		var self = this;
 		$('#level').effect('fade', 200, function(){
@@ -126,83 +70,11 @@ Maze.prototype.showTutorial = function(tutorialNames, index){
 	}
 };
 
-Maze.prototype.calculatePath = function(start, end){
-	// retrieve the start and end coordinates (0 based)
-	var startCoordinates = this.spaces[start].position;
-	var endCoordinates = this.spaces[end].position;
-	
-	// calculate the delta coordinates.
-	var dCoord = [endCoordinates[0] - startCoordinates[0], endCoordinates[1] - startCoordinates[1]];
-	
-	// this variable hold the return value
-	var path = [];
-	
-	var xMovement = dCoord[0] > 0 ? 2 : 0;
-	var yMovement = dCoord[1] > 0 ? 1 : 3;
-	
-	var baseX = Math.abs(dCoord[0]);
-	var baseY = Math.abs(dCoord[1]);
-	
-	// verify if x direction is 0
-	if(dCoord[0] === 0){
-		for(var i=0; i<baseY; i++){
-			path.push(yMovement);
-		}
-		
-	// verify if y direction is 0
-	} else if(dCoord[1] === 0){
-		for(var i=0; i<baseX; i++){
-			path.push(xMovement);
-		}
-		
-	// x and y directions are both non-zero
-	} else {
-		var xPath = baseX;
-		var yPath = baseY;
-		
-		var actualPosition = start;
-		var secondChoiceMovement = baseY >= baseX ? xMovement : yMovement;
-		
-		while(path.length < baseX + baseY){
-			if(xPath > yPath) {
-				actualPosition = this.spaces[actualPosition].adiacents[xMovement];
-				path.push(xMovement);
-				yPath += 2*baseY;
-			} else if(xPath < yPath) {
-				actualPosition = this.spaces[actualPosition].adiacents[yMovement];
-				path.push(yMovement);
-				xPath += 2*baseX;
-			} else {
-				var preferredMovement = baseY >= baseX ? yMovement : xMovement;
-				var futurePosition = this.spaces[actualPosition].adiacents[preferredMovement];
-				if(futurePosition != 0){
-					path.push(preferredMovement);
-					baseY >= baseX ? xPath += 2*baseX : yPath += 2*baseY;  
-				} else {
-					preferredMovement = baseY >= baseX ? xMovement : yMovement;
-					futurePosition = this.spaces[actualPosition].adiacents[preferredMovement];
-					if(futurePosition != 0){
-						path.push(preferredMovement);
-						baseY >= baseX ? yPath += 2*baseY : xPath += 2*baseX;  
-					}
-				}
-				actualPosition = futurePosition;
-			}
-			
-			if(actualPosition == 0){
-				path = []; 
-				break;
-			}
-		}
-	}
-	return path;
-};
-
 Maze.prototype.render = function(container){
 
 	var self = this;
 	
-	this.$container = container; 
+	this.$container = container;
 	
 	var caseSize = 0;
 	
@@ -277,38 +149,6 @@ Maze.prototype.render = function(container){
 		caseIndex++;
 	}
 	
-	for(var i=0; i<self.labels.length; i++){
-		var label = self.labels[i];
-		
-		var labelTop = (label.position[0] * caseSize);
-		var labelLeft = (label.position[1] * caseSize);
-		var labelHeight = (label.size[0] * caseSize);
-		var labelWidth = (label.size[1] * caseSize);
-	
-		var box = {width: labelWidth, height: labelHeight};
-		var maxFontAndBox = textUtils.getMaxFontSize(label.text, {
-			'font-family': 'trashhand',
-		}, box);
-		
-		var paddingTop = labelHeight - maxFontAndBox.box.height;
-		var paddingLeft = Math.floor((labelWidth - maxFontAndBox.box.width) / 2);
-		
-		var cas = $('<span class="absolute trashhand mazeLabel" style="width: ' + labelWidth + 'px; height: ' + labelHeight + 'px; top: ' + labelTop + 'px; left: ' + labelLeft + 'px; font-size: ' + maxFontAndBox.fontSize + 'px; padding-top: ' + paddingTop + 'px; padding-left: ' + paddingLeft + 'px;">' + label.text + '</span>');
-		mazeWrapper.append(cas);
-	}
-	
-	for(var i=0; i<self.images.length; i++){
-		var image = self.images[i];
-		
-		var imageTop = (image.position[0] * caseSize);
-		var imageLeft = (image.position[1] * caseSize);
-		var imageHeight = (image.size[0] * caseSize);
-		var imageWidth = (image.size[1] * caseSize);
-	
-		var cas = $('<img class="absolute" src="resources/images/labels/' + image.fileName + '.png" style="width: ' + imageWidth + 'px; height: ' + imageHeight + 'px; top: ' + imageTop + 'px; left: ' + imageLeft + 'px;"></img>');
-		mazeWrapper.append(cas);
-	}
-	
 	var tokenTop = self.spaces[self.end].position[0] * caseSize + (caseSize * (1 - exitTokenPadding) / 2);
 	var tokenLeft = self.spaces[self.end].position[1] * caseSize + (caseSize * (1 - exitTokenPadding) / 2);
 	
@@ -321,16 +161,13 @@ Maze.prototype.render = function(container){
 	var token = $('<img class="token scenicElement" character="' + self.character + '" src="resources/images/' + self.character + '.png" width="' + (caseSize*characterTokenPadding) + '" height="' + (caseSize*characterTokenPadding) + '" style="top: ' + tokenTop + 'px; left: ' + tokenLeft + 'px;"/>');
 	mazeWrapper.append(token);
 	
-	var actualPosition = self.start;
-	var lastValidDragPosition = actualPosition;
-	var actualDragPosition = actualPosition;
-	
 	//#LOG#console.log(JSON.stringify(mazeOffset));
 	
-	var MAZE_STATUS_CLONED;
-	var MOVEMENT_DESCRIPTOR;
-	
-	token.pep({
+	self.trigger('start', this.statusModifier);
+};
+
+/**
+token.pep({
 		shouldEase: false,
 		useCSSTranslation: false,
 		forceNonCSS3Movement: true,
@@ -542,195 +379,4 @@ Maze.prototype.render = function(container){
 			
 		}
 	});
-	
-	self.trigger('start', this.statusModifier);
-};
-
-
-var pathRenderer = {
-		
-	css: {
-		//'background-image': '-webkit-linear-gradient(#f1a165, #f36d0a)',
-		'background-color': '#f36d0a',
-		'border-style': 'solid',
-		'border-width': '0px'
-	},
-		
-	segments: [],
-		
-	startRadiusPercentage: 20,
-	pathResolutionVel: 20, // spaces per second
-		
-	render: function(path, maze, container, caseSize){
-		
-		this.destroyPath();
-		
-		// check if path consist of a single space
-		if(path.length == 1){
-			
-			// if so, simply render a circle over the space
-			var position = maze.spaces[path[0]].position;
-			
-			// calculate the segment offset
-			var segmentDimensions = {
-				'top': (position[0] * caseSize) + (caseSize / 2) - (caseSize * this.startRadiusPercentage / 100),
-				'left': (position[1] * caseSize) + (caseSize / 2) - (caseSize * this.startRadiusPercentage / 100),
-				'border-radius': 2 * caseSize * this.startRadiusPercentage / 100,
-				'height': 2 * caseSize * this.startRadiusPercentage / 100,
-				'width': 2 * caseSize * this.startRadiusPercentage / 100
-			};
-			
-			// construct the segment
-			var segment = $('<div class="absolute" pd="width" pdv="' + segmentDimensions['width'] + '"></div>');
-			
-			// apply the css rules
-			segment.css(this.css);
-			segment.css(segmentDimensions);
-			
-			// store the segment for future deletion
-			this.segments.push(segment);
-			
-			// append the segment to the container
-			container.append(segment);
-		} else {
-			var directions = [];
-			for(var i=0; i<path.length-1; i++){
-				directions.push(maze.getDirection(path[i], path[i+1]));
-			}
-			
-			var index = 0;
-			while(index < directions.length){
-				var direction = directions[index];
-				
-				for(i=index+1; i<directions.length; i++){
-					if(directions[i] != direction) break;
-				}
-				
-				var segmentLength = i - index;
-
-				var startSegment = (direction == 0 || direction == 3) ? i : index;
-				var position = maze.spaces[path[startSegment]].position;
-				var isVerticalSegment = direction == 0 || direction == 2;
-				
-				var segmentDimensions = {
-					'top': (position[0] * caseSize) + (caseSize / 2) - (caseSize * this.startRadiusPercentage / 100),
-					'left': (position[1] * caseSize) + (caseSize / 2) - (caseSize * this.startRadiusPercentage / 100),
-					'border-radius': caseSize * this.startRadiusPercentage / 100,
-					'height': 2 * caseSize * this.startRadiusPercentage / 100,
-					'width': segmentLength * caseSize + (2 * caseSize * this.startRadiusPercentage / 100)
-				};
-
-				var principalDimension = 'width'; 
-				var principalDimensionValue = segmentDimensions[principalDimension];
-				
-				if(isVerticalSegment){
-					principalDimension = 'height';
-					var swap = segmentDimensions['height'];
-					segmentDimensions['height'] = segmentDimensions['width'];
-					segmentDimensions['width'] = swap;
-					principalDimensionValue = segmentDimensions[principalDimension];
-				}
-				
-				var segment = $('<div class="absolute" pd="' + principalDimension + '" pdv="' + principalDimensionValue + '" d="' + direction + '"></div>');
-				
-				segment.css(this.css);
-				segment.css(segmentDimensions);
-				
-				this.segments.push(segment);
-				
-				container.append(segment);
-				
-				index = i;
-			}
-		}
-	},
-	
-	destroyPath: function(){
-		for(var i=0; i<this.segments.length; i++){
-			this.segments[i].remove();
-		}
-		
-		this.segments.splice(0, this.segments.length);
-	},
-	
-	setPathValid: function(validity){
-		for(var i=0; i<this.segments.length; i++){
-			this.segments[i].css('opacity', validity ? '1' : '0.3');
-		}
-	},
-	
-	resolvePath: function(path, maze, caseSize){
-		
-		var self = this;
-		
-		var pixelPerSecond = this.pathResolutionVel * caseSize;
-		
-		var lastTimestamp = new Date().getTime();
-		var begin = lastTimestamp;
-		var lastSegmentIndex = 0;
-		var lastSegmentDescriptor = {
-			index: lastSegmentIndex,
-			segment: self.segments[lastSegmentIndex],
-			spaces: 0
-		};
-		lastSegmentDescriptor['pd'] = lastSegmentDescriptor.segment.attr('pd');
-		lastSegmentDescriptor['pdv'] = lastSegmentDescriptor.segment.attr('pdv');
-		lastSegmentDescriptor['direction'] = lastSegmentDescriptor.segment.attr('d');
-		
-		(function resolveLoop(time){
-			
-			if(lastSegmentIndex >= self.segments.length) return;
-			
-			if(lastSegmentIndex != lastSegmentDescriptor.index){
-				// refresh the descriptor
-				lastSegmentDescriptor = {
-					index: lastSegmentIndex,
-					segment: self.segments[lastSegmentIndex],
-					spaces: lastSegmentDescriptor.spaces
-				};
-				lastSegmentDescriptor['pd'] = lastSegmentDescriptor.segment.attr('pd');
-				lastSegmentDescriptor['pdv'] = lastSegmentDescriptor.segment.attr('pdv');
-				lastSegmentDescriptor['direction'] = lastSegmentDescriptor.segment.attr('d');
-			}
-			
-			var now = new Date().getTime();
-			var delta = now - lastTimestamp;
-			var pixel = delta / 1000 * pixelPerSecond;
-			lastTimestamp = now; 
-			lastSegmentDescriptor.pdv -= pixel;
-			
-			if(isNaN(lastSegmentDescriptor.pdv) || lastSegmentDescriptor.pdv <= 0){
-				lastSegmentDescriptor.pdv = 0;
-				lastSegmentIndex++;
-			}
-
-			var newCss = {};
-			newCss[lastSegmentDescriptor['pd']] = lastSegmentDescriptor.pdv;
-			
-			if(lastSegmentDescriptor.direction == 1){
-				newCss['left'] = '+=' + pixel
-			} else if(lastSegmentDescriptor.direction == 2){
-				newCss['top'] = '+=' + pixel
-			}
-			lastSegmentDescriptor.segment.css(newCss);
-			
-			var spaces = Math.ceil((now - begin) / 1000 * self.pathResolutionVel);
-			
-			if(spaces > path.length) spaces = path.length;
-			
-			if(lastSegmentDescriptor.spaces < spaces){
-				for(var i=lastSegmentDescriptor.spaces; i<spaces; i++){
-					maze.spaces[path[i]].overpass({
-						maze: maze,
-						status: maze.status,
-						space: maze.spaces[path[i]], 
-						levelGUI: maze.levelGUI
-					});
-				}
-				lastSegmentDescriptor.spaces = spaces;
-			}
-            
-            LevelGUI.requestAnimationFrame(resolveLoop);
-        })(lastTimestamp);
-	}
-};
+*/

@@ -1,12 +1,10 @@
-function Space(position, walls, adiacents, types){
+function Space(id, position, walls, adiacents, types){
 	this.position = position;
 	this.walls = walls;
 	this.adiacents = adiacents;
 	this.types = types;
-	this.id = Space.nextId++;
+	this.id = id;
 };
-
-Space.nextId = 0;
 
 Space.prototype.setDOMSpaceElement = function($el){
 	this.$el = $el;

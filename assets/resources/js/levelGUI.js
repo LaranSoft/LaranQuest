@@ -1,33 +1,15 @@
 function LevelGUI(options){
 	
-	var defaultOptions = {
-		showRemainingMovements: true,
-		showRemainingHealth: true
-	};
+	var defaultOptions = {};
 	
 	options = $.extend({}, defaultOptions, options);
 	
-	this.$remainingMovements = $('#remainingMovements');
-	this.$remainingHealth = $('#remainingHealth');
-	this.$star1 = $('#star1');
-	this.$star2 = $('#star2');
-	this.$star3 = $('#star3');
 	this.$body = $('#level');
-	
-	options.showRemainingMovements !== false && $('[data-remainingMovements]').removeClass('hidden');
-	options.showRemainingHealth !== false && $('[data-remainingHealth]').removeClass('hidden');
 	
 	this.reset();
 };
 
-LevelGUI.prototype.reset = function(){
-	this.star1 = false;
-	this.star2 = false;
-	this.star3 = false;
-	this.$star1.removeClass('taken');
-	this.$star2.removeClass('taken');
-	this.$star3.removeClass('taken');
-};
+LevelGUI.prototype.reset = function(){};
 
 LevelGUI.requestAnimationFrame = function(callback) {
     return  window.requestAnimationFrame && window.requestAnimationFrame(callback)         ||
@@ -40,15 +22,6 @@ LevelGUI.requestAnimationFrame = function(callback) {
 
 LevelGUI.prototype.setMaze = function(maze){
 	this.maze = maze;
-};
-
-LevelGUI.prototype.starStatus = {};
-
-LevelGUI.prototype.setRemainingMovements = function(remainingMovements){
-	this.$remainingMovements.text(remainingMovements);
-};
-LevelGUI.prototype.setRemainingHealth = function(remainingHealth){
-	this.$remainingHealth.text(remainingHealth);
 };
 
 LevelGUI.prototype.showTutorial = function(tutorial, callback){
@@ -134,13 +107,6 @@ LevelGUI.prototype.damage = function(character, damageValue, callback){
 		damageToken.remove();
 		callback();
 	});
-};
-
-LevelGUI.prototype.addStar = function(index){
-	if(this['star' + index] === false){
-		this['star' + index] = true;
-		this['$star' + index].addClass('taken');
-	}
 };
 
 LevelGUI.prototype.completeLevel = function(){
