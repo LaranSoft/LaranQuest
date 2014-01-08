@@ -119,9 +119,9 @@
 .case {
 	position: absolute;
 	background-size: 100%;
-	border-left: white;
-	border-right: black;
 }
+
+.case.selectable {background-image: url('../images/0000.png');}
 
 .token.exp {
   -transition: all 0.6s;

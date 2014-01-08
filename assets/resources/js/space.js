@@ -1,8 +1,9 @@
-function Space(id, position, walls, adiacents, blocked, scenicElement){
+function Space(id, position, walls, adiacents, free, floorElement, scenicElement){
 	this.position = position;
 	this.walls = walls;
 	this.adiacents = adiacents;
-	this.blocked = blocked;
+	this.free = free;
+	this.floorElement = floorElement;
 	this.scenicElement = scenicElement;
 	this.id = id;
 };
@@ -25,9 +26,10 @@ Space.prototype.onEnter = function(status, direction, levelGUI){
 	return {canEnter: true};
 };
 
-Space.prototype.onExit = function(status, direction, levelGUI){
-	var activeCharacter = status.characters[status.activeCharacter];
-	return {canExit: isNaN(activeCharacter.remainingMovements) || activeCharacter.remainingMovements > 0};
+Space.prototype.setSelectableIfPossible = function(symbol){
+	if(this.free === true){
+		this.$el.addClass('selectable');
+	}
 };
 
 Space.prototype.rollback = function(status, levelGUI){
@@ -53,7 +55,7 @@ Space.prototype.overpass = function(context){
  * 
  ******************************************************/
 function ExitSpace(id, position, walls, adiacents){
-	Space.call(this, id, position, walls, adiacents, false, 'exit');
+	Space.call(this, id, position, walls, adiacents, false, null, 'exit');
 }
 
 ExitSpace.prototype = Object.create(Space.prototype);

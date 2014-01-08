@@ -3,7 +3,8 @@ function Maze(options){
 		'size': [0, 0], 
 		'spaces': {}, 
 		'triggers': {}, 
-		'tutorials': []
+		'tutorials': [],
+		'objects': {}
 	};
 	
 	options = $.extend({}, defaultOptions, options);
@@ -11,6 +12,7 @@ function Maze(options){
 	this.size = options.size;
 	this.triggers = options.triggers;
 	this.tutorials = options.tutorials;
+	this.objects = options.objects;
 	
 	this.spaces = {};
 	this.positions = {};
@@ -132,11 +134,11 @@ Maze.prototype.render = function(container){
 		
 		caseDescription.setDOMSpaceElement(cas);
 		
-		if(caseDescription.blocked === true){
+		if(caseDescription.floorElement){
 			var tokenTop = caseTop + (caseSize * (1 - expTokenPadding) / 2);
 			var tokenLeft = caseLeft + (caseSize * (1 - expTokenPadding) / 2);
-			cas.floor = $('<img class="floorElement" src="resources/images/blocked.png" style="width: ' + (caseSize*expTokenPadding) + 'px; height: ' + (caseSize*expTokenPadding) + 'px; top: ' + tokenTop + 'px; left: ' + tokenLeft + 'px;"/>');
-			mazeWrapper.append(cas.floor);
+			cas.floorElement = $('<img class="floorElement" src="resources/images/' + caseDescription.floorElement + '.png" style="width: ' + (caseSize*expTokenPadding) + 'px; height: ' + (caseSize*expTokenPadding) + 'px; top: ' + tokenTop + 'px; left: ' + tokenLeft + 'px;"/>');
+			mazeWrapper.append(cas.floorElement);
 		}
 		
 		if(caseDescription.scenicElement){
@@ -149,9 +151,32 @@ Maze.prototype.render = function(container){
 		caseIndex++;
 	}
 	
+	for(var objectName in self.objects){
+		var object = self.objects[objectName];
+		
+		var caseTop = (object.position[0] * caseSize);
+		var caseLeft = (object.position[1] * caseSize);
+		
+		var objectTop = caseTop + (caseSize * (1 - expTokenPadding) / 2);
+		var objectLeft = caseLeft + (caseSize * (1 - expTokenPadding) / 2);
+		var objectDOM = $('<img class="scenicElement" src="resources/images/' + objectName + '.png" style="width: ' + (caseSize*expTokenPadding) + 'px; height: ' + (caseSize*expTokenPadding) + 'px; top: ' + objectTop + 'px; left: ' + objectLeft + 'px;"/>');
+		
+		objectDOM.on('click', function(){
+			self.onSelect(object);
+		});
+		
+		mazeWrapper.append(objectDOM);
+	}
+	
 	//#LOG#console.log(JSON.stringify(mazeOffset));
 	
 	self.trigger('start', this.statusModifier);
+};
+
+Maze.prototype.onSelect = function(object){
+	for(var i in this.spaces){
+		this.spaces[i].setSelectableIfPossible(object);
+	}
 };
 
 /**
