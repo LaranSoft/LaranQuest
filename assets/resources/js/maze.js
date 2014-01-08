@@ -163,6 +163,7 @@ Maze.prototype.render = function(container){
 		
 		objectDOM.on('click', function(){
 			self.onSelect(object);
+			objectDOM.addClass('selected');
 		});
 		
 		mazeWrapper.append(objectDOM);
