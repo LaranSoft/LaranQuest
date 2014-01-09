@@ -183,7 +183,7 @@ Maze.prototype.showValidTargetsFor = function(objectName, object, $el){
 	
 	var self = this;
 	
-	console.log('you cannot play');
+	self.levelGUI.setPlayButtonVisible(false);
 	
 	var callback = function(space){
 		for(var i in self.spaces){

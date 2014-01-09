@@ -96,13 +96,13 @@
 
 #middle {
 	top: 60px;
-	bottom: 50px;
+	bottom: 100px;
 	left: 0px;
 	width: 100%;
 }
 
 #bottom {
-	height: 50px;
+	height: 100px;
 	left: 0px;
 	bottom: 0px;
 	width: 100%;
@@ -126,6 +126,16 @@
 	100% {-webkit-transform: scale(0.6);}
 }
 
+@-webkit-keyframes animateShow {
+	0% {-webkit-transform: scale(0);}
+	100% {-webkit-transform: scale(1);}
+}
+
+@-webkit-keyframes animateHide {
+	0% {-webkit-transform: scale(1);}
+	100% {-webkit-transform: scale(0);}
+}
+
 .case.placingTarget:before {
 	content: '';
 	background-image: -webkit-linear-gradient(#f1a165, #f36d0a);
@@ -139,6 +149,22 @@
 }
 
 .scenicElement.selected {-webkit-animation: pulsing 0.6s ease-in-out infinite alternate;}
+
+#playButton {
+	width: 80px;
+	height: 80px;
+	margin: 0 auto;
+	display: block;
+	-webkit-transform: scale(0);
+}
+
+.animateShow {
+	-webkit-animation: animateShow 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.animateHide {
+	-webkit-animation: animateHide 0.3s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards;
+}
 
 .token.exp {
   -transition: all 0.6s;

@@ -5,6 +5,7 @@ function LevelGUI(options){
 	options = $.extend({}, defaultOptions, options);
 	
 	this.$body = $('#level');
+	this.playButton = $('#playButton');
 	
 	this.reset();
 };
@@ -26,9 +27,9 @@ LevelGUI.prototype.setMaze = function(maze){
 
 LevelGUI.prototype.setPlayButtonVisible = function(visible){
 	if(visible){
-		
-	} else {
-		
+		this.playButton.attr('s', '1').removeClass('animateHide').addClass('animateShow');
+	} else if(this.playButton.attr('s') == '1'){
+		this.playButton.removeClass('animateShow').addClass('animateHide');
 	}
 };
 
