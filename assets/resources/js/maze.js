@@ -151,6 +151,8 @@ Maze.prototype.render = function(container){
 		caseIndex++;
 	}
 	
+	self.unplacedGadgets = {total: 0};
+	
 	for(var objectName in self.objects){
 		var object = self.objects[objectName];
 		
@@ -162,21 +164,53 @@ Maze.prototype.render = function(container){
 		var objectDOM = $('<img class="scenicElement" src="resources/images/' + objectName + '.png" style="width: ' + (caseSize*expTokenPadding) + 'px; height: ' + (caseSize*expTokenPadding) + 'px; top: ' + objectTop + 'px; left: ' + objectLeft + 'px;"/>');
 		
 		objectDOM.on('click', function(){
-			self.onSelect(object);
-			objectDOM.addClass('selected');
+			self.showValidTargetsFor(objectName, object, objectDOM);
 		});
+		
+		self.unplacedGadgets.total++;
+		self.unplacedGadgets.objectName = true;
 		
 		mazeWrapper.append(objectDOM);
 	}
 	
+	self.caseSize = caseSize;
 	//#LOG#console.log(JSON.stringify(mazeOffset));
 	
 	self.trigger('start', this.statusModifier);
 };
 
-Maze.prototype.onSelect = function(object){
+Maze.prototype.showValidTargetsFor = function(objectName, object, $el){
+	
+	var self = this;
+	
+	console.log('you cannot play');
+	
+	var callback = function(space){
+		for(var i in self.spaces){
+			self.spaces[i].setSelectableForPlacing(false);
+			self.spaces[i].removeGadget(objectName, object);
+		}
+		
+		$el.removeClass('selected');
+		
+		$el.css({
+			top: ((space.position[0] * self.caseSize) + ((self.caseSize - $el.width()) / 2)) + 'px',
+			left: ((space.position[1] * self.caseSize) + ((self.caseSize - $el.height()) / 2)) + 'px'
+		});
+		
+		space.setGadget(objectName, object);
+		
+		if(self.unplacedGadgets.objectName){
+			self.unplacedGadgets.total--;
+			self.unplacedGadgets.objectName = false;
+		}
+		self.levelGUI.setPlayButtonVisible(self.unplacedGadgets.total <= 0);
+	};
+	
+	$el.addClass('selected');
+	
 	for(var i in this.spaces){
-		this.spaces[i].setSelectableIfPossible(object);
+		this.spaces[i].setSelectableForPlacing(this.spaces[i].isPlaceable(objectName), callback);
 	}
 };
 

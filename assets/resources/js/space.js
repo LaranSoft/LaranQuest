@@ -26,9 +26,30 @@ Space.prototype.onEnter = function(status, direction, levelGUI){
 	return {canEnter: true};
 };
 
-Space.prototype.setSelectableIfPossible = function(symbol){
-	if(this.free === true){
-		this.$el.addClass('selectable');
+Space.prototype.setGadget = function(name, gadget){
+	this.gadgetName = name;
+	this.gadget = gadget;
+};
+
+Space.prototype.removeGadget = function(name, gadget){
+	if(this.gadgetName === name){
+		this.gadget = null;
+		this.gadgetName = null;
+	};
+};
+
+Space.prototype.isPlaceable = function(symbol){
+	return this.free === true;
+};
+
+Space.prototype.setSelectableForPlacing = function(selectable, callback){
+	if(selectable === true){
+		var self = this;
+		this.$el.addClass('placingTarget').on('click', function(){
+			callback(self);
+		});
+	} else {
+		this.$el.removeClass('placingTarget').off('click');
 	}
 };
 
@@ -56,6 +77,7 @@ Space.prototype.overpass = function(context){
  ******************************************************/
 function ExitSpace(id, position, walls, adiacents){
 	Space.call(this, id, position, walls, adiacents, false, null, 'exit');
+	this.setGadget('exit', {name: 'exit', value: true});
 }
 
 ExitSpace.prototype = Object.create(Space.prototype);

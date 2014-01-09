@@ -24,6 +24,14 @@ LevelGUI.prototype.setMaze = function(maze){
 	this.maze = maze;
 };
 
+LevelGUI.prototype.setPlayButtonVisible = function(visible){
+	if(visible){
+		
+	} else {
+		
+	}
+};
+
 LevelGUI.prototype.showTutorial = function(tutorial, callback){
 	var self = this;
 	

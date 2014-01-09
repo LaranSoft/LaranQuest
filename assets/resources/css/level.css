@@ -126,7 +126,7 @@
 	100% {-webkit-transform: scale(0.6);}
 }
 
-.case.selectable:before {
+.case.placingTarget:before {
 	content: '';
 	background-image: -webkit-linear-gradient(#f1a165, #f36d0a);
 	width: 40%;
