@@ -14,11 +14,7 @@ var memory = {
 	},
 	
 	reset: function(){
-		var stages = [];
-		stages.push({'locked': false});
-		stages.push({'locked': true});
-		this.save('stages', stages);
-		
+		this.save('lastStage', 1);
 		this.save('tutorials', {});
 		
 		this.save('inited', true);
