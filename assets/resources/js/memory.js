@@ -14,7 +14,7 @@ var memory = {
 	},
 	
 	reset: function(){
-		this.save('lastStage', 1);
+		this.save('lastStage', 0);
 		this.save('tutorials', {});
 		
 		this.save('inited', true);

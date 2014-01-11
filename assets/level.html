@@ -39,7 +39,7 @@
 			</div>
 			<script>
 				$('#level').on('pageshow', function() {
-					var levelSelected = '1';// memory.load('levelSelected');
+					var levelSelected = memory.load('levelSelected');
 					loader.loadScript('resources/js/level' + levelSelected + '.js', function(){
 						var level = window['level' + levelSelected];
 						level.setLevelGUI(new LevelGUI(level.GUISettings));

@@ -2,7 +2,7 @@ var levelSelection = {
 		
 	stageCount: 2,
 		
-	render: function(container, model){
+	render: function(container, lastStage){
 		
 		var containerW = container.width();
 		var containerH = container.height();
@@ -20,40 +20,18 @@ var levelSelection = {
 		
 		for(var i=0; i<this.stageCount; i++){
 			
-			var stageStatus = model[i];
-			
 			var stage = $('<div id="stage' + (i+1) + '" class="stage" level="' + (i+1) + '">' + (i+1) + '</div>');
-			
-			var stars = []; 
-			
-			for(var j=0; j<3; j++){
-				var src = 'starVoid.png';
-				if(stageStatus.stars > j){
-					src = 'exp.png';
-				}
-				stars.push($('<img class="star" src="resources/images/' + src + '" draggable="false"></img>'));
-			}
 			
 			stage.css({
 				'height': tileDimension + 'px',
 				'width': tileDimension + 'px',
 				'border-radius': (tileDimension/5) + 'px',
-				'font-size': (tileDimension*7/10) + 'px',
+				'font-size': (tileDimension) + 'px',
 				'left': (padding + (i%(tilesPerLine)) * (tileDimension + padding)) + 'px',
 				'top': (padding + Math.floor(i/tilesPerLine)  * (tileDimension + padding)) + 'px'
 			});
 			
-			for(var j=0; j<stars.length; j++){
-				var star = stars[j];
-				star.css({
-					'height': starDimension + 'px',
-					'width': starDimension + 'px',
-					'left': starPadding + j*(starDimension + starPadding) + 'px'
-				});
-				stage.append(star);
-			}
-
-			if(stageStatus.locked === true){
+			if(i >= lastStage){
 				var lock = $('<img class="lock" src="resources/images/locked.png" draggable="false"></img>');
 				lock.css({
 					'bottom': (tileDimension / 10) + 'px',
@@ -63,7 +41,7 @@ var levelSelection = {
 				});
 				stage.append(lock);
 				
-				if(stageStatus.toUnlock === true){
+				if(i == lastStage){
 					lock.attr('toUnlock', i);
 					stage.attr('toActivate', '1');
 				}
@@ -130,10 +108,6 @@ var levelSelection = {
 		}, 600, function(){
 			toUnlock.remove();
 			$('[toActivate=1]').addClass('active');
-			var stageStatus = model[toUnlock.attr('toUnlock')];
-			stageStatus.locked = false;
-			delete stageStatus.toUnlock;
-			memory.save('stages', model);
 		});
 	}	
 };

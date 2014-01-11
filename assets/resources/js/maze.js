@@ -175,12 +175,13 @@ Maze.prototype.render = function(container){
 		
 		var objectTop = caseTop + (caseSize * (1 - expTokenPadding) / 2);
 		var objectLeft = caseLeft + (caseSize * (1 - expTokenPadding) / 2);
-		var objectDOM = $('<img id="gadget' + object.gadget.name + '" class="scenicElement" src="resources/images/' + object.gadget.name + '.png"/>');
+		var objectDOM = $('<img id="gadget' + object.gadget.name + '" index="' + i + '" class="gadget scenicElement" src="resources/images/' + object.gadget.name + '.png"/>');
 		
 		LevelGUI.setRect(objectDOM, objectTop, objectLeft, caseSize*expTokenPadding, caseSize*expTokenPadding);
 		
 		objectDOM.on('click', function(){
-			self.state == 'positioning' && self.showValidTargetsFor(object.gadget, objectDOM);
+			var $el = $(this);
+			self.state == 'positioning' && self.showValidTargetsFor(self.objects[$el.attr('index')].gadget, $el);
 		});
 		
 		self.unplacedGadgets.total++;
@@ -200,6 +201,9 @@ Maze.prototype.showValidTargetsFor = function(gadget, $el){
 	
 	var self = this;
 	
+	self.selectedGadget && self.selectedGadget.removeClass('selected').addClass('unselected'); 
+	self.selectedGadget = $el;
+	
 	self.levelGUI.setPlayButtonVisible(false);
 	
 	var callback = function(space){
@@ -208,11 +212,11 @@ Maze.prototype.showValidTargetsFor = function(gadget, $el){
 			self.spaces[i].removeGadget(gadget);
 		}
 		
-		$el.removeClass('selected');
+		self.selectedGadget.removeClass('selected');
 		
-		$el.css({
-			top: ((space.position[0] * self.caseSize) + ((self.caseSize - $el.width()) / 2)) + 'px',
-			left: ((space.position[1] * self.caseSize) + ((self.caseSize - $el.height()) / 2)) + 'px'
+		self.selectedGadget.css({
+			top: ((space.position[0] * self.caseSize) + ((self.caseSize - self.selectedGadget.width()) / 2)) + 'px',
+			left: ((space.position[1] * self.caseSize) + ((self.caseSize - self.selectedGadget.height()) / 2)) + 'px'
 		});
 		
 		space.setGadget(gadget);
@@ -224,7 +228,7 @@ Maze.prototype.showValidTargetsFor = function(gadget, $el){
 		self.levelGUI.setPlayButtonVisible(self.unplacedGadgets.total <= 0);
 	};
 	
-	$el.addClass('selected');
+	$el.removeClass('unselected').addClass('selected');
 	
 	for(var i in this.spaces){
 		this.spaces[i].setSelectableForPlacing(this.spaces[i].isPlaceable(gadget.name), callback);
@@ -240,16 +244,28 @@ Maze.prototype.evaluateGadgets = function(mazeDescriptor){
 	}
 };
 
-Maze.prototype.moveIn = function(space, mazeDescriptor){
+Maze.prototype.moveIn = function(space, mazeDescriptor, effect){
 	var self = this;
 	
 	mazeDescriptor.status.visited[space.id] = true;
 	space.setVisited(true);
 	
-	self.token.animate({
-		top: ((space.position[0] * self.caseSize) + ((self.caseSize - self.token.width()) / 2)) + 'px',
-		left: ((space.position[1] * self.caseSize) + ((self.caseSize - self.token.height()) / 2)) + 'px'
-	}, 300, 'easeOutCubic');
+	var w = self.token.width();
+	var h = self.token.height();
+	
+	if(!effect){
+		self.token.animate({
+			top: ((space.position[0] * self.caseSize) + ((self.caseSize - w) / 2)) + 'px',
+			left: ((space.position[1] * self.caseSize) + ((self.caseSize - h) / 2)) + 'px'
+		}, 300, 'easeOutCubic');
+	} else {
+		self.token.fadeOut(300, function(){
+			self.token.css({
+				top: ((space.position[0] * self.caseSize) + ((self.caseSize - w) / 2)) + 'px',
+				left: ((space.position[1] * self.caseSize) + ((self.caseSize - h) / 2)) + 'px'
+			}).fadeIn(300);
+		});
+	}
 	
 	for(var i in this.spaces){
 		this.spaces[i].setSelectableForMoving(false);
@@ -277,25 +293,41 @@ Maze.prototype.moveIn = function(space, mazeDescriptor){
 	} else if(!imDead){
 		mazeDescriptor.status.sbe = [];
 	
-		var pathClosed = true;
-		for(var i=0; i<space.adiacents.length; i++){
-			var adiacentId = space.adiacents[i];
-			if(adiacentId != 0 && !mazeDescriptor.status.visited[adiacentId]){
-				pathClosed = false;
-				this.spaces[space.adiacents[i]].setSelectableForMoving(true, function(space){
-					self.moveIn(space, mazeDescriptor);
-				});
-			}
+		var redirect = mazeDescriptor.status.redirect;
+		mazeDescriptor.status.redirect = null;
+		if(redirect){
+			self.moveIn(redirect, mazeDescriptor, 'fade');
+		} else {
+			self.showAdiacentsFor(space, mazeDescriptor);
 		}
-		imDead = pathClosed;
+		
+	} else {
+		self.token.toggle('explode', function(){
+			self.trigger('reload');
+		});
 	}
+};
+
+Maze.prototype.showAdiacentsFor = function(space, mazeDescriptor){
+	var self = this;
+	var pathClosed = true;
+	for(var i=0; i<space.adiacents.length; i++){
+		var adiacentId = space.adiacents[i];
+		if(adiacentId != 0 && !mazeDescriptor.status.visited[adiacentId]){
+			pathClosed = false;
+			this.spaces[space.adiacents[i]].setSelectableForMoving(true, function(space){
+				self.moveIn(space, mazeDescriptor);
+			});
+		}
+	}
+	imDead = pathClosed;
 	
 	if(imDead){
 		self.token.toggle('explode', function(){
 			self.trigger('reload');
 		});
 	}
-}
+};
 
 /**
 token.pep({

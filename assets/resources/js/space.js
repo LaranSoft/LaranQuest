@@ -1,13 +1,18 @@
-function Space(id, position, walls, adiacents, free, floorElement, scenicElement){
+function Space(id, position, walls, adiacents, free, exceptions, floorElement, scenicElement, gadget){
 	this.position = position;
 	this.walls = walls;
 	this.adiacents = adiacents;
 	this.free = free;
 	this.floorElement = floorElement;
-	this.scenicElement = scenicElement;
 	this.id = id;
 	
 	this.visited = false;
+	this.exceptions = exceptions || [];
+	
+	gadget && this.setGadget(gadget);
+	
+	scenicElement && (this.scenicElement = scenicElement);
+	!scenicElement && gadget && (this.scenicElement = gadget.name);
 };
 
 Space.prototype.setDOMSpaceElement = function($el){
@@ -29,7 +34,7 @@ Space.prototype.removeGadget = function(gadget){
 };
 
 Space.prototype.isPlaceable = function(gadget){
-	return this.free === true;
+	return this.free != (this.exceptions.indexOf(gadget) != -1);
 };
 
 Space.prototype.setSelectableForPlacing = function(selectable, callback){
@@ -56,7 +61,6 @@ Space.prototype.setSelectableForMoving = function(selectable, callback){
 
 Space.prototype.setVisited = function(visited){
 	this.$el.addClass('visited');
-	this.$el.scenicElement && this.$el.scenicElement.hide();
 };
 
 /******************************************************
@@ -67,7 +71,7 @@ Space.prototype.setVisited = function(visited){
  * 
  ******************************************************/
 function ExitSpace(id, position, walls, adiacents){
-	Space.call(this, id, position, walls, adiacents, false, null, 'exit');
+	Space.call(this, id, position, walls, adiacents, false, null, null, 'exit');
 	this.setGadget(new ExitGadget());
 }
 
