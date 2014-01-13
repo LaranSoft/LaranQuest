@@ -35,9 +35,30 @@ LevelGUI.prototype.setMaze = function(maze){
 
 LevelGUI.prototype.setPlayButtonVisible = function(visible){
 	if(visible){
-		this.playButton.attr('on', '1').transition({
-			scale: 1
-		}, 300, 'linear');
+		
+		var self = this;
+		self.playButton.attr('on', '1');
+		
+		var start = {x: 0};
+		var target = {x: 1};
+		var completed = false;
+		var tween = new TWEEN.Tween(start).to(target, 300).easing(TWEEN.Easing.Back.Out);
+		tween.onUpdate(function(){
+			self.playButton.css({'-webkit-transform': 'scale(' + start.x + ')'});
+		});
+		tween.onComplete(function(){
+			completed = true;
+		});
+		
+		function animate() {
+			if(!completed){
+				LevelGUI.requestAnimationFrame(animate);
+		        TWEEN.update();
+			}
+	    }
+		tween.start();
+		animate();
+		
 	} else {
 		this.playButton.attr('on', '0').transition({
 			scale: 0
