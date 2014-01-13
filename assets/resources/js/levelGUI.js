@@ -9,7 +9,7 @@ function LevelGUI(options){
 	this.$body = $('#level');
 	this.playButton = $('#playButton');
 	this.playButton.on('click', function(){
-		if(self.playButton.hasClass('animateShow')){
+		if(self.playButton.attr('on') == '1'){
 			self.setPlayButtonVisible(false);
 			self.maze.trigger('startPath');
 		}
@@ -35,9 +35,13 @@ LevelGUI.prototype.setMaze = function(maze){
 
 LevelGUI.prototype.setPlayButtonVisible = function(visible){
 	if(visible){
-		this.playButton.attr('s', '1').removeClass('animateHide').addClass('animateShow');
-	} else if(this.playButton.attr('s') == '1'){
-		this.playButton.removeClass('animateShow').addClass('animateHide');
+		this.playButton.attr('on', '1').transition({
+			scale: 1
+		}, 300, 'linear');
+	} else {
+		this.playButton.attr('on', '0').transition({
+			scale: 0
+		}, 300, 'linear');
 	}
 };
 

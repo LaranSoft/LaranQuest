@@ -1,6 +1,6 @@
 var levelSelection = {
 		
-	stageCount: 2,
+	stageCount: 3,
 		
 	render: function(container, lastStage){
 		
@@ -26,7 +26,7 @@ var levelSelection = {
 				'height': tileDimension + 'px',
 				'width': tileDimension + 'px',
 				'border-radius': (tileDimension/5) + 'px',
-				'font-size': (tileDimension) + 'px',
+				'font-size': (tileDimension * 9/10) + 'px',
 				'left': (padding + (i%(tilesPerLine)) * (tileDimension + padding)) + 'px',
 				'top': (padding + Math.floor(i/tilesPerLine)  * (tileDimension + padding)) + 'px'
 			});

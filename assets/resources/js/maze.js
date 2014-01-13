@@ -29,9 +29,8 @@ Maze.prototype.baseTriggers = {
 	},
 	'startPath': function(data){
 		this.state = 'resolving';
-		console.log('starting level');
 
-		var mazeDescriptor = {status: {sbe: [], visited: {}}};
+		var mazeDescriptor = {status: {sbe: [], visited: {}, path: []}};
 		for(var spaceId in this.spaces){
 			mazeDescriptor[spaceId] = {enterFunctions: []};
 			mazeDescriptor.status.visited[spaceId] = false;
@@ -46,6 +45,7 @@ Maze.prototype.baseTriggers = {
 		$('#level').effect('fade', 200, function(){
 			$('#level').show();
 			self.$container.html('');
+			for(var spaceId in self.spaces) self.spaces[spaceId].reset();
 			self.render(self.$container, self.statusModifier);
 			self.levelGUI.reset();
 		});
@@ -122,16 +122,8 @@ Maze.prototype.render = function(container){
 	var mazeLeft = Math.floor((containerW - mazeW) / 2);
 	
 	var mazeWrapper = $('<div id="mazeWrapper" style="width: ' + mazeW + 'px; height: ' + mazeH + 'px; top: ' + mazeTop + 'px; left: ' + mazeLeft + 'px;"></div>');
-
 	container.append(mazeWrapper);
-	
-	var offset = mazeWrapper.offset();
-	var mazeOffset = {
-		left: offset.left,
-		top: offset.top,
-		right: offset.left + mazeW,
-		bottom: offset.top + mazeH
-	};
+	this.mazeWrapper = mazeWrapper;
 	
 	for(var spaceId in self.spaces){
 		var caseDescription = self.spaces[spaceId];
@@ -145,24 +137,28 @@ Maze.prototype.render = function(container){
 		
 		mazeWrapper.append(cas);
 		
+		var placingTarget = $('<div class="placingTarget"></div>');
+		cas.append(placingTarget);
+		placingTarget.hide();
+		cas.placingTarget = placingTarget;
+		
+		var placingTargetPlate = $('<div class="placingTargetPlate"></div>');
+		cas.append(placingTargetPlate);
+		placingTargetPlate.hide();
+		cas.placingTarget.plate = placingTargetPlate;
+		
 		caseDescription.setDOMSpaceElement(cas);
 		
-		if(caseDescription.floorElement){
-			var tokenTop = caseTop + (caseSize * (1 - expTokenPadding) / 2);
-			var tokenLeft = caseLeft + (caseSize * (1 - expTokenPadding) / 2);
-			cas.floorElement = $('<img class="floorElement" src="resources/images/' + caseDescription.floorElement + '.png"/>');
-			LevelGUI.setRect(cas.floorElement, tokenTop, tokenLeft, caseSize*expTokenPadding, caseSize*expTokenPadding);
+		var gadget = caseDescription.getGadget();
+		if(gadget){
+			var gadgetTop = caseTop + (caseSize * (1 - expTokenPadding) / 2);
+			var gadgetLeft = caseLeft + (caseSize * (1 - expTokenPadding) / 2);
+			var $gadget = $('<img class="scenicElement" src="resources/images/' + gadget.name + '.png"/>');
+			LevelGUI.setRect($gadget, gadgetTop, gadgetLeft, caseSize*expTokenPadding, caseSize*expTokenPadding);
 			
-			mazeWrapper.append(cas.floorElement);
+			mazeWrapper.append($gadget);
 		}
 		
-		if(caseDescription.scenicElement){
-			var tokenTop = caseTop + (caseSize * (1 - expTokenPadding) / 2);
-			var tokenLeft = caseLeft + (caseSize * (1 - expTokenPadding) / 2);
-			cas.scenicElement = $('<img class="scenicElement" src="resources/images/' + caseDescription.scenicElement + '.png"/>');
-			LevelGUI.setRect(cas.scenicElement, tokenTop, tokenLeft, caseSize*expTokenPadding, caseSize*expTokenPadding);
-			mazeWrapper.append(cas.scenicElement);
-		}
 	}
 	
 	self.unplacedGadgets = {total: 0};
@@ -201,18 +197,24 @@ Maze.prototype.showValidTargetsFor = function(gadget, $el){
 	
 	var self = this;
 	
-	self.selectedGadget && self.selectedGadget.removeClass('selected').addClass('unselected'); 
+	self.selectedGadget && self.selectedGadget.transition({
+		scale: 1,
+		queue: false
+	}, 300, 'linear'); 
 	self.selectedGadget = $el;
 	
 	self.levelGUI.setPlayButtonVisible(false);
 	
 	var callback = function(space){
 		for(var i in self.spaces){
-			self.spaces[i].setSelectableForPlacing(false);
+			self.spaces[i].setSelectable(false);
 			self.spaces[i].removeGadget(gadget);
 		}
 		
-		self.selectedGadget.removeClass('selected');
+		self.selectedGadget.transition({
+			scale: 1,
+			queue: false
+		}, 300, 'linear');
 		
 		self.selectedGadget.css({
 			top: ((space.position[0] * self.caseSize) + ((self.caseSize - self.selectedGadget.width()) / 2)) + 'px',
@@ -221,17 +223,20 @@ Maze.prototype.showValidTargetsFor = function(gadget, $el){
 		
 		space.setGadget(gadget);
 		
-		if(self.unplacedGadgets[gadget.name]){
+		if(self.unplacedGadgets[gadget.name] == true){
 			self.unplacedGadgets.total--;
 			self.unplacedGadgets[gadget.name] = false;
 		}
 		self.levelGUI.setPlayButtonVisible(self.unplacedGadgets.total <= 0);
 	};
 	
-	$el.removeClass('unselected').addClass('selected');
+	$el.transition({
+		scale: 1.3,
+		queue: false
+	}, 300, 'linear');
 	
 	for(var i in this.spaces){
-		this.spaces[i].setSelectableForPlacing(this.spaces[i].isPlaceable(gadget.name), callback);
+		this.spaces[i].setSelectable(this.spaces[i].isPlaceable(gadget.name), callback);
 	}
 };
 
@@ -244,31 +249,23 @@ Maze.prototype.evaluateGadgets = function(mazeDescriptor){
 	}
 };
 
-Maze.prototype.moveIn = function(space, mazeDescriptor, effect){
+Maze.prototype.getDirection = function(start, end){
+	return this.spaces[start].adiacents.indexOf(end);
+};
+
+Maze.prototype.getPosition = function(start, direction){
+	return this.spaces[start].adiacents[direction];
+};
+
+Maze.prototype.manageMovement = function(space, mazeDescriptor){
 	var self = this;
 	
 	mazeDescriptor.status.visited[space.id] = true;
-	space.setVisited(true);
-	
-	var w = self.token.width();
-	var h = self.token.height();
-	
-	if(!effect){
-		self.token.animate({
-			top: ((space.position[0] * self.caseSize) + ((self.caseSize - w) / 2)) + 'px',
-			left: ((space.position[1] * self.caseSize) + ((self.caseSize - h) / 2)) + 'px'
-		}, 300, 'easeOutCubic');
-	} else {
-		self.token.fadeOut(300, function(){
-			self.token.css({
-				top: ((space.position[0] * self.caseSize) + ((self.caseSize - w) / 2)) + 'px',
-				left: ((space.position[1] * self.caseSize) + ((self.caseSize - h) / 2)) + 'px'
-			}).fadeIn(300);
-		});
-	}
+	mazeDescriptor.status.path.push(space.id);
+	pathRenderer.render(mazeDescriptor.status.path, self, self.mazeWrapper, self.caseSize);
 	
 	for(var i in this.spaces){
-		this.spaces[i].setSelectableForMoving(false);
+		this.spaces[i].setSelectable(false);
 	}
 	
 	var enterFunctions = mazeDescriptor[space.id].enterFunctions;
@@ -308,6 +305,31 @@ Maze.prototype.moveIn = function(space, mazeDescriptor, effect){
 	}
 };
 
+Maze.prototype.moveIn = function(space, mazeDescriptor, effect){
+	var self = this;
+	
+	var w = self.token.width();
+	var h = self.token.height();
+	
+	if(!effect){
+		self.token.transition({
+			top: ((space.position[0] * self.caseSize) + ((self.caseSize - w) / 2)) + 'px',
+			left: ((space.position[1] * self.caseSize) + ((self.caseSize - h) / 2)) + 'px'
+		}, 300, 'easeOutCubic', function(){
+			self.manageMovement(space, mazeDescriptor);
+		});
+	} else {
+		self.token.fadeOut(300, function(){
+			self.token.css({
+				top: ((space.position[0] * self.caseSize) + ((self.caseSize - w) / 2)) + 'px',
+				left: ((space.position[1] * self.caseSize) + ((self.caseSize - h) / 2)) + 'px'
+			}).fadeIn(300, function(){
+				self.manageMovement(space, mazeDescriptor);
+			});
+		});
+	}
+};
+
 Maze.prototype.showAdiacentsFor = function(space, mazeDescriptor){
 	var self = this;
 	var pathClosed = true;
@@ -315,7 +337,7 @@ Maze.prototype.showAdiacentsFor = function(space, mazeDescriptor){
 		var adiacentId = space.adiacents[i];
 		if(adiacentId != 0 && !mazeDescriptor.status.visited[adiacentId]){
 			pathClosed = false;
-			this.spaces[space.adiacents[i]].setSelectableForMoving(true, function(space){
+			this.spaces[space.adiacents[i]].setSelectable(true, function(space){
 				self.moveIn(space, mazeDescriptor);
 			});
 		}
