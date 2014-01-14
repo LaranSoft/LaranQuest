@@ -15,6 +15,13 @@ function LevelGUI(options){
 		}
 	});
 	
+	$('#mainMenuBtn').on('click', function(){
+		if(!$('#mainMenuBtn').hasClass('clicked')){
+			$('#mainMenuBtn').addClass('clicked');
+			$.mobile.changePage('levelSelection.html');
+		}
+	});
+
 	this.reset();
 };
 
@@ -33,36 +40,89 @@ LevelGUI.prototype.setMaze = function(maze){
 	this.maze = maze;
 };
 
-LevelGUI.prototype.setPlayButtonVisible = function(visible){
-	if(visible){
-		
-		var self = this;
-		self.playButton.attr('on', '1');
-		
-		var start = {x: 0};
-		var target = {x: 1};
-		var completed = false;
-		var tween = new TWEEN.Tween(start).to(target, 300).easing(TWEEN.Easing.Back.Out);
-		tween.onUpdate(function(){
-			self.playButton.css({'-webkit-transform': 'scale(' + start.x + ')'});
-		});
-		tween.onComplete(function(){
-			completed = true;
-		});
-		
-		function animate() {
-			if(!completed){
-				LevelGUI.requestAnimationFrame(animate);
-		        TWEEN.update();
-			}
-	    }
-		tween.start();
-		animate();
-		
+LevelGUI.prototype.animate = function(status) {
+	var self = this;
+	if(status.completed === false){
+		LevelGUI.requestAnimationFrame(function(){self.animate(status);});
+        TWEEN.update();
+	}
+};
+
+
+LevelGUI.prototype.setGadgetSelected = function(gadget, selected){
+	if(!gadget) return;
+	
+	var self = this;
+	
+	var start = {x: 0.7};
+	var target = {x: 1};
+	var customStatus = {completed: false};
+	var tween = new TWEEN.Tween(start).to(target, 300);
+	
+	if(selected === true){
+		if(gadget.attr('on') != '1'){
+			gadget.attr('on', '1');
+			
+			tween.easing(TWEEN.Easing.Back.Out).onUpdate(function(){
+				gadget.css({'-webkit-transform': 'scale(' + start.x + ')'});
+			}).onComplete(function(){
+				customStatus.completed = true;
+				gadget.css({'-webkit-transform': 'scale(1)'});
+			});
+			tween.start();
+			self.animate(customStatus);
+		}
 	} else {
-		this.playButton.attr('on', '0').transition({
-			scale: 0
-		}, 300, 'linear');
+		if(gadget.attr('on') == '1'){
+			gadget.attr('on', '0');
+			
+			tween.easing(TWEEN.Easing.Back.Out).onUpdate(function(){
+				gadget.css({'-webkit-transform': 'scale(' + (1.7-start.x) + ')'});
+			}).onComplete(function(){
+				customStatus.completed = true;
+				gadget.css({'-webkit-transform': 'scale(0.7)'});
+			});
+			tween.start();
+			self.animate(customStatus);
+		}
+	}
+	
+}
+
+LevelGUI.prototype.setPlayButtonVisible = function(visible){
+	var self = this;
+	
+	var start = {x: 0};
+	var target = {x: 1};
+	var customStatus = {completed: false};
+	var tween = new TWEEN.Tween(start).to(target, 300);
+	
+	if(visible){
+		if(self.playButton.attr('on') != '1'){
+			self.playButton.attr('on', '1');
+			
+			tween.easing(TWEEN.Easing.Back.Out).onUpdate(function(){
+				self.playButton.css({'-webkit-transform': 'scale(' + start.x + ')'});
+			}).onComplete(function(){
+				customStatus.completed = true;
+				self.playButton.css({'-webkit-transform': 'scale(1)'});
+			});
+			tween.start();
+			self.animate(customStatus);
+		}
+	} else {
+		if(self.playButton.attr('on') == '1'){
+			self.playButton.attr('on', '0');
+			
+			tween.easing(TWEEN.Easing.Back.In).onUpdate(function(){
+				self.playButton.css({'-webkit-transform': 'scale(' + (1-start.x) + ')'});
+			}).onComplete(function(){
+				customStatus.completed = true;
+				self.playButton.css({'-webkit-transform': 'scale(0)'});
+			});
+			tween.start();
+			self.animate(customStatus);
+		}
 	}
 };
 
@@ -116,12 +176,11 @@ LevelGUI.prototype.completeLevel = function(){
 	var self = this;
 	
 	var lastStage = Number(memory.load('lastStage'));
-	var levelSelected = Number('1');// memory.load('levelSelected');
+	var levelSelected = Number(memory.load('levelSelected'));
 	
-	if(levelSelected == lastStage){
-		
+	if(levelSelected - lastStage == 1){
+		memory.save('lastStage', lastStage+1);
 	}
-	memory.save('lastStage', lastStage+1);
 	
 	self.playButton.hide();
 	var okButton = $('<a id="nextLevelBtn" class="levelSummaryElement" href="levelSelection.html" data-role="button" data-theme="a">Next</a>');

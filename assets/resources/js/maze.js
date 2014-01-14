@@ -166,14 +166,12 @@ Maze.prototype.render = function(container){
 	for(var i=0; i<self.objects.length; i++){
 		var object = self.objects[i];
 		
-		var caseTop = (object.position[0] * caseSize);
-		var caseLeft = (object.position[1] * caseSize);
+		var objectTop = (object.position[0] * caseSize);
+		var objectLeft = (object.position[1] * caseSize);
 		
-		var objectTop = caseTop + (caseSize * (1 - expTokenPadding) / 2);
-		var objectLeft = caseLeft + (caseSize * (1 - expTokenPadding) / 2);
-		var objectDOM = $('<img id="gadget' + object.gadget.name + '" index="' + i + '" class="gadget scenicElement" src="resources/images/' + object.gadget.name + '.png"/>');
+		var objectDOM = $('<img id="gadget' + object.gadget.name + '" index="' + i + '" class="positionableGadget scenicElement" src="resources/images/' + object.gadget.name + '.png"/>');
 		
-		LevelGUI.setRect(objectDOM, objectTop, objectLeft, caseSize*expTokenPadding, caseSize*expTokenPadding);
+		LevelGUI.setRect(objectDOM, objectTop, objectLeft, caseSize, caseSize);
 		
 		objectDOM.on('click', function(){
 			var $el = $(this);
@@ -197,13 +195,10 @@ Maze.prototype.showValidTargetsFor = function(gadget, $el){
 	
 	var self = this;
 	
-	self.selectedGadget && self.selectedGadget.transition({
-		scale: 1,
-		queue: false
-	}, 300, 'linear'); 
-	self.selectedGadget = $el;
-	
+	self.levelGUI.setGadgetSelected(self.selectedGadget, false);
 	self.levelGUI.setPlayButtonVisible(false);
+	
+	self.selectedGadget = $el;
 	
 	var callback = function(space){
 		for(var i in self.spaces){
@@ -211,10 +206,7 @@ Maze.prototype.showValidTargetsFor = function(gadget, $el){
 			self.spaces[i].removeGadget(gadget);
 		}
 		
-		self.selectedGadget.transition({
-			scale: 1,
-			queue: false
-		}, 300, 'linear');
+		self.levelGUI.setGadgetSelected(self.selectedGadget, false);
 		
 		self.selectedGadget.css({
 			top: ((space.position[0] * self.caseSize) + ((self.caseSize - self.selectedGadget.width()) / 2)) + 'px',
@@ -230,10 +222,7 @@ Maze.prototype.showValidTargetsFor = function(gadget, $el){
 		self.levelGUI.setPlayButtonVisible(self.unplacedGadgets.total <= 0);
 	};
 	
-	$el.transition({
-		scale: 1.3,
-		queue: false
-	}, 300, 'linear');
+	self.levelGUI.setGadgetSelected($el, true);
 	
 	for(var i in this.spaces){
 		this.spaces[i].setSelectable(this.spaces[i].isPlaceable(gadget.name), callback);
