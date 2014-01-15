@@ -144,3 +144,27 @@ TeleportSwitchGadget.prototype.applyTo = function(space, maze, mazeDescriptor) {
 		status.teleportsSwitch[self.teleportId] = true;
 	});
 };
+
+/******************************************************
+ * 
+ * 
+ * KEY GADGET
+ * 
+ * 
+ ******************************************************/
+function KeyGadget(){
+	Gadget.call(this, 'key');
+}
+
+KeyGadget.prototype = Object.create(Gadget.prototype);
+KeyGadget.prototype.constructor = KeyGadget;
+
+KeyGadget.prototype.applyTo = function(space, maze, mazeDescriptor) {
+	
+	mazeDescriptor.status.keys = 0;
+	
+	mazeDescriptor[space.id].enterFunctions.push(function(status){
+		status.sack.push('key');
+		status.keys++;
+	});
+};

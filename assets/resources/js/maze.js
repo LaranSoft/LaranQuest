@@ -4,7 +4,8 @@ function Maze(options){
 		'spaces': {}, 
 		'triggers': {}, 
 		'tutorials': [],
-		'objects': []
+		'objects': [],
+		'doors': []
 	};
 	
 	options = $.extend({}, defaultOptions, options);
@@ -13,6 +14,7 @@ function Maze(options){
 	this.triggers = options.triggers;
 	this.tutorials = options.tutorials;
 	this.objects = options.objects;
+	this.doors = options.doors;
 	
 	this.spaces = {};
 	this.positions = {};
@@ -30,12 +32,13 @@ Maze.prototype.baseTriggers = {
 	'startPath': function(data){
 		this.state = 'resolving';
 
-		var mazeDescriptor = {status: {sbe: [], visited: {}, path: []}};
+		var mazeDescriptor = {status: {sbe: [], visited: {}, path: [], sack: []}};
 		for(var spaceId in this.spaces){
 			mazeDescriptor[spaceId] = {enterFunctions: []};
 			mazeDescriptor.status.visited[spaceId] = false;
 		}
 		this.evaluateGadgets(mazeDescriptor);
+		this.evaluateDoors(mazeDescriptor);
 		
 		var startSpace = this.spaces[mazeDescriptor.start];
 		this.moveIn(startSpace, mazeDescriptor);
@@ -158,7 +161,32 @@ Maze.prototype.render = function(container){
 			
 			mazeWrapper.append($gadget);
 		}
+	}
+	
+	for(var i=0; i<self.doors.length; i++){
+		var spaceA = self.spaces[self.doors[i][0]];
+		var idSpaceB = self.doors[i][1];
 		
+		var direction = spaceA.adiacents.indexOf(idSpaceB);
+		var directionPrefix = direction % 2 == 0 ? 'h' : 'v';
+		
+		var doorDOM = $('<img id="door' + i + '" class="scenicElement" src="resources/images/' + directionPrefix + 'Door.png"/>');
+		
+		var doorTop = (spaceA.position[0] * caseSize);
+		var doorLeft = (spaceA.position[1] * caseSize);
+		
+		directionPrefix == 'h' && (doorLeft += caseSize/10);
+		directionPrefix == 'v' && (doorTop += caseSize/10);
+		
+		direction == 1 && (doorLeft += (caseSize * 15/16));
+		direction == 2 && (doorTop += (caseSize * 15/16));
+		
+		var doorW = direction % 2 == 0 ? caseSize * 4/5 : caseSize * 1/8;
+		var doorH = direction % 2 != 0 ? caseSize * 4/5 : caseSize * 1/8;
+		
+		LevelGUI.setRect(doorDOM, doorTop, doorLeft, doorW, doorH);
+		
+		mazeWrapper.append(doorDOM);
 	}
 	
 	self.unplacedGadgets = {total: 0};
@@ -322,11 +350,12 @@ Maze.prototype.moveIn = function(space, mazeDescriptor, effect){
 Maze.prototype.showAdiacentsFor = function(space, mazeDescriptor){
 	var self = this;
 	var pathClosed = true;
-	for(var i=0; i<space.adiacents.length; i++){
-		var adiacentId = space.adiacents[i];
+	var adiacents = space.getAdiacents(mazeDescriptor);
+	for(var i=0; i<adiacents.length; i++){
+		var adiacentId = adiacents[i];
 		if(adiacentId != 0 && !mazeDescriptor.status.visited[adiacentId]){
 			pathClosed = false;
-			this.spaces[space.adiacents[i]].setSelectable(true, function(space){
+			this.spaces[adiacents[i]].setSelectable(true, function(space){
 				self.moveIn(space, mazeDescriptor);
 			});
 		}
@@ -337,6 +366,33 @@ Maze.prototype.showAdiacentsFor = function(space, mazeDescriptor){
 		self.token.toggle('explode', function(){
 			self.trigger('reload');
 		});
+	}
+};
+
+Maze.prototype.evaluateDoors = function(mazeDescriptor){
+	var self = this;
+	
+	var enterFunction = function(status){
+		if(status.path.length >= 2){
+			var spaceId = status.path[status.path.length-1];
+			var lastSpaceId = status.path[status.path.length-2];
+			
+			for(var j=0; j<self.doors.length; j++){
+				if((self.doors[j][0] == spaceId && self.doors[j][1] == lastSpaceId) ||
+						(self.doors[j][1] == spaceId && self.doors[j][0] == lastSpaceId)){
+					status.keys--;
+					break;
+				}
+			}
+		}
+	};
+	
+	for(var i=0; i<this.doors.length; i++){
+		var idSpaceA = this.doors[i][0];
+		var idSpaceB = this.doors[i][1];
+		
+		mazeDescriptor[idSpaceA].enterFunctions.push(enterFunction);
+		mazeDescriptor[idSpaceB].enterFunctions.push(enterFunction);
 	}
 };
 

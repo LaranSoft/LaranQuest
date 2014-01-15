@@ -10,12 +10,14 @@ function Space(id, position, walls, adiacents, options){
 	this.free = options.free;
 	this.exceptions = options.exceptions;
 	this.fixedGadget = options.gadget;
+	this.doors = options.doors;
 };
 
 Space.defaultOptions = {
 	'free': true, 
 	'exceptions': [], 
-	'gadget': null 
+	'gadget': null,
+	'doors': []
 };
 
 Space.prototype.reset = function(){
@@ -42,6 +44,19 @@ Space.prototype.removeGadget = function(gadget){
 
 Space.prototype.isPlaceable = function(gadget){
 	return (this.free != (this.exceptions.indexOf(gadget) != -1)) && !this.fixedGadget && !this.removableGadget;
+};
+
+Space.prototype.getAdiacents = function(mazeDescriptor){
+	if(this.doors.length == 0) return this.adiacents;
+	
+	var retVal = [];
+	for(var i=0; i<this.adiacents.length; i++){
+		if(this.doors.indexOf(this.adiacents[i]) == -1 || mazeDescriptor.status.keys > 0){
+			retVal.push(this.adiacents[i]);
+		}
+	}
+	
+	return retVal;
 };
 
 Space.prototype.setSelectable = function(selectable, callback){
