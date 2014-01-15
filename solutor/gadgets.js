@@ -1,0 +1,145 @@
+function Gadget(name){
+	this.id = Gadget.nextId++;
+	this.name = name;
+};
+
+Gadget.nextId = 0;
+
+Gadget.prototype.applyTo = function(spaceId, mazeDescriptor) {}
+
+
+
+/******************************************************
+ * 
+ * 
+ * START GADGET
+ * 
+ * 
+ ******************************************************/
+function StartGadget(){
+	Gadget.call(this, 'start');
+}
+
+StartGadget.prototype = Object.create(Gadget.prototype);
+StartGadget.prototype.constructor = StartGadget;
+
+StartGadget.prototype.applyTo = function(spaceId, mazeDescriptor) {
+	mazeDescriptor.start = spaceId;
+};
+
+
+/******************************************************
+ * 
+ * 
+ * SEAL GADGET
+ * 
+ * 
+ ******************************************************/
+function SealGadget(){
+	Gadget.call(this, 'seal');
+}
+
+SealGadget.prototype = Object.create(Gadget.prototype);
+SealGadget.prototype.constructor = SealGadget;
+
+SealGadget.prototype.applyTo = function(spaceId, mazeDescriptor) {};
+
+
+/******************************************************
+ * 
+ * 
+ * EXIT GADGET
+ * 
+ * 
+ ******************************************************/
+function ExitGadget(){
+	Gadget.call(this, 'exit');
+}
+
+ExitGadget.prototype = Object.create(Gadget.prototype);
+ExitGadget.prototype.constructor = ExitGadget;
+
+ExitGadget.prototype.applyTo = function(spaceId, mazeDescriptor) {
+	mazeDescriptor[spaceId].enterFunctions.push(function(status){
+		status.sbe.push(function(s){
+			for(var i in s.visited){
+				if(!s.visited[i]){
+					return -1;
+				}
+			}
+			return 1;
+		});
+	});
+};
+
+/******************************************************
+ * 
+ * 
+ * TELEPORT GADGET
+ * 
+ * 
+ ******************************************************/
+function TeleportGadget(teleportId, enabled){
+	Gadget.call(this, 'teleport' + teleportId);
+	this.teleportId = teleportId;
+	if(enabled != null){
+		this.enabled = enabled;
+	} else {
+		this.enabled = true;
+	}
+}
+
+TeleportGadget.prototype = Object.create(Gadget.prototype);
+TeleportGadget.prototype.constructor = TeleportGadget;
+
+TeleportGadget.prototype.applyTo = function(spaceId, mazeDescriptor) {
+	var self = this;
+	
+	// trovo la casella con l'altra placca di teletrasporto
+	var destinationId = 0;
+	for(var i in mazeDescriptor.gadgets){
+		if(i != spaceId){
+			if(mazeDescriptor.gadgets[i].teleportId == this.teleportId){
+				destinationId = i; break;
+			}
+		}
+	}
+	
+	mazeDescriptor[spaceId].enterFunctions.push(function(status){
+		if(self.enabled === false && (!status.teleportsSwitch || !status.teleportsSwitch[self.teleportId])){
+			status.sbe.push(function(s){
+				return -1;
+			});
+		} else {
+			if(!status.teleports) status.teleports = [];
+			if(!status.teleports[self.teleportId]){
+				status.teleports[self.teleportId] = true;
+				status.redirect = [Number(destinationId)];
+			}
+		}
+	});
+};
+
+/******************************************************
+ * 
+ * 
+ * TELEPORT SWITCH GADGET
+ * 
+ * 
+ ******************************************************/
+function TeleportSwitchGadget(teleportId){
+	Gadget.call(this, 'teleportSwitch' + teleportId);
+	this.teleportId = teleportId;
+}
+
+TeleportSwitchGadget.prototype = Object.create(Gadget.prototype);
+TeleportSwitchGadget.prototype.constructor = TeleportSwitchGadget;
+
+TeleportSwitchGadget.prototype.applyTo = function(space, maze, mazeDescriptor) {
+	var self = this;
+	
+	mazeDescriptor[space.id].enterFunctions.push(function(status){
+		if(!status.teleportsSwitch) status.teleportsSwitch = [];
+		status.teleportsSwitch[self.teleportId] = true;
+	});
+};

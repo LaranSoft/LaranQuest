@@ -9,7 +9,7 @@ var level3 = new Maze({
 	    new Space(6, [2, 1], '1111', [2, 7, 10, 5], {free: false, gadget: new TeleportSwitchGadget(1)}),
 	    new Space(7, [2, 2], '1121', [3, 8, 0, 6]),
 	    new Space(8, [2, 3], '1011', [4, 0, 11, 7]),
-	    new Space(9, [3, 0], '1110', [8, 0, 0, 7], {free: false, gadget: new ExitGadget()}),
+	    new Space(9, [3, 0], '1110', [5, 10, 12, 0], {free: false, gadget: new ExitGadget()}),
 	    new Space(10, [3, 1], '1211', [6, 0, 13, 9]),
 	    new Space(11, [3, 3], '1012', [8, 0, 15, 0]),
 	    new Space(12, [4, 0], '1100', [9, 13, 0, 0]),

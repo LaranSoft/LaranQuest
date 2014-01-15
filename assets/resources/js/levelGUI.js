@@ -54,36 +54,16 @@ LevelGUI.prototype.setGadgetSelected = function(gadget, selected){
 	
 	var self = this;
 	
-	var start = {x: 0.7};
-	var target = {x: 1};
-	var customStatus = {completed: false};
-	var tween = new TWEEN.Tween(start).to(target, 300);
-	
 	if(selected === true){
 		if(gadget.attr('on') != '1'){
 			gadget.attr('on', '1');
 			
-			tween.easing(TWEEN.Easing.Back.Out).onUpdate(function(){
-				gadget.css({'-webkit-transform': 'scale(' + start.x + ')'});
-			}).onComplete(function(){
-				customStatus.completed = true;
-				gadget.css({'-webkit-transform': 'scale(1)'});
-			});
-			tween.start();
-			self.animate(customStatus);
+			gadget.removeClass('unselected').addClass('selected');
 		}
 	} else {
 		if(gadget.attr('on') == '1'){
 			gadget.attr('on', '0');
-			
-			tween.easing(TWEEN.Easing.Back.Out).onUpdate(function(){
-				gadget.css({'-webkit-transform': 'scale(' + (1.7-start.x) + ')'});
-			}).onComplete(function(){
-				customStatus.completed = true;
-				gadget.css({'-webkit-transform': 'scale(0.7)'});
-			});
-			tween.start();
-			self.animate(customStatus);
+			gadget.removeClass('selected').addClass('unselected');
 		}
 	}
 	
@@ -92,36 +72,13 @@ LevelGUI.prototype.setGadgetSelected = function(gadget, selected){
 LevelGUI.prototype.setPlayButtonVisible = function(visible){
 	var self = this;
 	
-	var start = {x: 0};
-	var target = {x: 1};
-	var customStatus = {completed: false};
-	var tween = new TWEEN.Tween(start).to(target, 300);
-	
 	if(visible){
 		if(self.playButton.attr('on') != '1'){
-			self.playButton.attr('on', '1');
-			
-			tween.easing(TWEEN.Easing.Back.Out).onUpdate(function(){
-				self.playButton.css({'-webkit-transform': 'scale(' + start.x + ')'});
-			}).onComplete(function(){
-				customStatus.completed = true;
-				self.playButton.css({'-webkit-transform': 'scale(1)'});
-			});
-			tween.start();
-			self.animate(customStatus);
+			self.playButton.attr('on', '1').removeClass('animateHide').addClass('animateShow');
 		}
 	} else {
 		if(self.playButton.attr('on') == '1'){
-			self.playButton.attr('on', '0');
-			
-			tween.easing(TWEEN.Easing.Back.In).onUpdate(function(){
-				self.playButton.css({'-webkit-transform': 'scale(' + (1-start.x) + ')'});
-			}).onComplete(function(){
-				customStatus.completed = true;
-				self.playButton.css({'-webkit-transform': 'scale(0)'});
-			});
-			tween.start();
-			self.animate(customStatus);
+			self.playButton.attr('on', '0').removeClass('animateShow').addClass('animateHide');
 		}
 	}
 };

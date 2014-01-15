@@ -38,7 +38,7 @@
 }
 
 .menuBtn {
-	background-size: 100%;
+	background-size: contain;
 	width: 20%;
 	height: 100%;
 	display: inline-block;
@@ -99,6 +99,14 @@
     -webkit-perspective: 1000;
 }
 
+.positionableGadget.selected {
+	-webkit-animation: normalToBig 0.3s linear forwards;
+}
+
+.positionableGadget.unselected {
+	-webkit-animation: bigToNormal 0.3s linear forwards;
+}
+
 #gadgetstart {z-index: 500;}
 
 #playButton {
@@ -107,20 +115,17 @@
 	margin: 0 auto;
 	display: block;
 	-webkit-transform: scale(0);
+	-webkit-backface-visibility: hidden;
+    -webkit-perspective: 1000;
 }
+
+#playButton.animateShow {-webkit-animation: animateShow 0.3s linear forwards;}
+#playButton.animateHide {-webkit-animation: animateHide 0.3s linear forwards;}
 
 #nextLevelBtn {
 	width: 80px;
 	margin: 0 auto;
 	background-image: linear-gradient(#f1a165, #f36d0a);
-}
-
-.animateShow {
-	-webkit-animation: animateShow 0.3s linear forwards;
-}
-
-.animateHide {
-	-webkit-animation: animateHide 0.3s linear forwards;
 }
 
 .token.exp {
@@ -185,4 +190,42 @@
 
 .tutorialContainer {
 	padding: 25px;
+}
+
+@-webkit-keyframes pulsing {
+        0% {-webkit-transform: scale(1);}
+        100% {-webkit-transform: scale(0.6);}
+}
+
+@-webkit-keyframes animateShow {
+    0% {-webkit-transform: scale(0);}
+    25% {-webkit-transform: scale(0.5);}
+    50% {-webkit-transform: scale(1.2);}
+    100% {-webkit-transform: scale(1);}
+}
+
+@-webkit-keyframes animateHide {
+    0% {-webkit-transform: scale(1);}
+    25% {-webkit-transform: scale(1.2);}
+    50% {-webkit-transform: scale(0.5);}
+    100% {-webkit-transform: scale(0);}
+}
+
+@-webkit-keyframes normalToBig {
+        0% {-webkit-transform: scale(0.7);}
+        25% {-webkit-transform: scale(0.85);}
+        50% {-webkit-transform: scale(1.2);}
+        100% {-webkit-transform: scale(1);}
+}
+
+@-webkit-keyframes bigToNormal {
+        0% {-webkit-transform: scale(1);}
+        25% {-webkit-transform: scale(0.85);}
+        50% {-webkit-transform: scale(0.56);}
+        100% {-webkit-transform: scale(0.7);}
+}
+
+@-webkit-keyframes pulsing {
+        0% {-webkit-transform: scale(1);}
+        100% {-webkit-transform: scale(0.6);}
 }
