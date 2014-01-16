@@ -1,37 +1,29 @@
-var adiacentsMap = {};
-	
-adiacentsMap[1] = [2, 5];
-adiacentsMap[2] = [1, 3, 6];
-adiacentsMap[3] = [2, 4, 7];
-adiacentsMap[4] = [3, 8];
-adiacentsMap[5] = [1, 6, 9];
-adiacentsMap[6] = [2, 5, 7, 10];
-adiacentsMap[7] = [3, 6, 8];
-adiacentsMap[8] = [4, 7, 12];
-adiacentsMap[9] = [5, 10, 13];
-adiacentsMap[10] = [6, 9, 14];
-adiacentsMap[12] = [8, 16];
-adiacentsMap[13] = [9, 14];
-adiacentsMap[14] = [10, 13, 15];
-adiacentsMap[15] = [14, 16];
-adiacentsMap[16] = [12, 15];
+var spaces = [
+    new Space(1, [0, 2, 5, 0]),
+	new Space(2, [0, 3, 6, 1]),
+	new Space(3, [0, 4, 7, 2]),
+	new Space(4, [0, 0, 8, 3]),
+	new Space(5, [1, 6, 9, 0]),
+	new Space(6, [2, 7, 10, 5]),
+	new Space(7, [3, 8, 0, 6]),
+	new Space(8, [4, 0, 11, 7]),
+	new Space(9, [5, 10, 12, 0]),
+	new Space(10, [6, 0, 13, 9]),
+	new Space(11, [8, 0, 15, 0]),
+	new Space(12, [9, 13, 0, 0]),
+	new Space(13, [10, 14, 0, 12]),
+	new Space(14, [0, 15, 0, 13]),
+	new Space(15, [11, 0, 0, 14])
+];
 
-var spaces = [];
-spaces.push({id: 1});
-spaces.push({id: 2});
-spaces.push({id: 3});
-spaces.push({id: 4, star: true, teleport: 't1', onEnter: function(status, enteringDirection, exitingDirection){return status.sw == 'on';}});
-spaces.push({id: 5, star: true, teleport: 't1', onEnter: function(status, enteringDirection, exitingDirection){return status.sw == 'on';}});
-spaces.push({id: 6, star: true, onEnter: function(status, enteringDirection, exitingDirection){status.sw = 'on'; return true;}});
-spaces.push({id: 7});
-spaces.push({id: 8});
-spaces.push({id: 9, star: true, end: true});
-spaces.push({id: 10});
-spaces.push({id: 12});
-spaces.push({id: 13});
-spaces.push({id: 14});
-spaces.push({id: 15});
-spaces.push({id: 16});
+var elements = [
+    new StartGadget()
+];
 
-var elements = [];
+var gadgets = {
+	4: new TeleportGadget(1, false),
+	5: new TeleportGadget(1, false),
+	6: new TeleportSwitchGadget(1),
+	9: new ExitGadget()
+};
 	

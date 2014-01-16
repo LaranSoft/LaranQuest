@@ -135,11 +135,34 @@ function TeleportSwitchGadget(teleportId){
 TeleportSwitchGadget.prototype = Object.create(Gadget.prototype);
 TeleportSwitchGadget.prototype.constructor = TeleportSwitchGadget;
 
-TeleportSwitchGadget.prototype.applyTo = function(space, maze, mazeDescriptor) {
+TeleportSwitchGadget.prototype.applyTo = function(spaceId, mazeDescriptor) {
 	var self = this;
 	
-	mazeDescriptor[space.id].enterFunctions.push(function(status){
+	mazeDescriptor[spaceId].enterFunctions.push(function(status){
 		if(!status.teleportsSwitch) status.teleportsSwitch = [];
 		status.teleportsSwitch[self.teleportId] = true;
+	});
+};
+
+/******************************************************
+ * 
+ * 
+ * KEY GADGET
+ * 
+ * 
+ ******************************************************/
+function KeyGadget(){
+	Gadget.call(this, 'key');
+}
+
+KeyGadget.prototype = Object.create(Gadget.prototype);
+KeyGadget.prototype.constructor = KeyGadget;
+
+KeyGadget.prototype.applyTo = function(spaceId, mazeDescriptor) {
+	
+	mazeDescriptor.status.keys = 0;
+	
+	mazeDescriptor[spaceId].enterFunctions.push(function(status){
+		status.keys++;
 	});
 };

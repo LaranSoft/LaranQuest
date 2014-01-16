@@ -3,6 +3,7 @@ function Path(status, space){
 	this.length = 0;
 	this.last = null;
 	this.status = status;
+	this.status.path = this;
 	
 	if(space != null){
 		space = Number(space);
@@ -32,5 +33,9 @@ Path.prototype.goto = function(space){
 };
 
 Path.prototype.get = function(index){
-	return this.mPath[index];
+	if(index >= 0){
+		return this.mPath[index];
+	} else {
+		return this.mPath[this.mPath.length + index]
+	}
 };

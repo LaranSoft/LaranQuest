@@ -5,7 +5,7 @@
 	<script src="path.js"></script>
 	<script src="space.js"></script>
 	<script src="gadgets.js"></script>
-	<script src="levels/level5.js"></script>
+	<script src="levels/level4.js"></script>
 </head>
 <body>
 	<div id="carlo"></div>
@@ -40,10 +40,6 @@
 					console.log('------ ' + elements[i].name + ' in space ' + freeSpaces[elementsPosition[i]].id);
 				}
 				
-				if(JSON.stringify(elementsPosition) == '[1,0]'){
-					console.log('breakpoint');
-				}
-				
 				var gadgetsPositioned = {};
 				for(var i in elementsPosition){
 					gadgetsPositioned[freeSpaces[elementsPosition[i]].id] = elements[i];
@@ -62,6 +58,37 @@
 				
 				for(var i in mazeDescriptor.gadgets){
 					mazeDescriptor.gadgets[i].applyTo(i, mazeDescriptor);
+				}
+				
+				if(typeof doors != 'undefined'){
+					var enterFunction = function(status){
+						if(status.path.length >= 2){
+							var spaceId = status.path.last;
+							var lastSpaceId = status.path.get(-2);
+							
+							for(var j=0; j<doors.length; j++){
+								if((doors[j][0] == spaceId && doors[j][1] == lastSpaceId) ||
+										(doors[j][1] == spaceId && doors[j][0] == lastSpaceId)){
+									status.keys--;
+									
+									status.sbe.push(function(s){
+										return s.keys;
+									});
+									break;
+								}
+							}
+						}
+					};
+					
+					var doorsApplied = [];
+					
+					for(var i in doors){
+						var idSpaceA = doors[i][0];
+						var idSpaceB = doors[i][1];
+						
+						doorsApplied.indexOf(idSpaceA) == -1 && mazeDescriptor[idSpaceA].enterFunctions.push(enterFunction) && doorsApplied.push(idSpaceA);
+						doorsApplied.indexOf(idSpaceB) == -1 && mazeDescriptor[idSpaceB].enterFunctions.push(enterFunction) && doorsApplied.push(idSpaceB);
+					}
 				}
 				
 				var response = algorythmCycle(mazeDescriptor);
