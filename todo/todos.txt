@@ -1,0 +1,17 @@
+webview.getSettings().setRenderPriority(RenderPriority.HIGH);
+webview.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
+
+provare a levare l'accelerazione hardware e a trasformare gli span in img
+
+-webkit-transform-style:flat e
+-webkit-transform: translate(0, 0, 0)
+
+provare a lasciare l'accelerazione hardware e a fare 
+if (Build.VERSION.SDK_INT >= 11){
+    webview.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+}
+
++rendere i tasti in cima un pò più piccini
+
+sistemare per bene il pulsante play e lo zaino
+

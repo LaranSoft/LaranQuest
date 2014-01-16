@@ -32,7 +32,7 @@ Maze.prototype.baseTriggers = {
 	'startPath': function(data){
 		this.state = 'resolving';
 
-		var mazeDescriptor = {status: {sbe: [], visited: {}, path: [], sack: []}};
+		var mazeDescriptor = {status: {sbe: [], eots: [], visited: {}, path: [], sack: []}};
 		for(var spaceId in this.spaces){
 			mazeDescriptor[spaceId] = {enterFunctions: []};
 			mazeDescriptor.status.visited[spaceId] = false;
@@ -299,13 +299,18 @@ Maze.prototype.manageMovement = function(space, mazeDescriptor){
 			levelCompleted = true;
 		}
 	}
+	mazeDescriptor.status.sbe = [];
+	
+	for(var i=0; i<mazeDescriptor.status.eots.length; i++){
+		mazeDescriptor.status.eots[i](mazeDescriptor.status);
+	}
+	mazeDescriptor.status.eots = [];
 	
 	if(imDead && levelCompleted) levelCompleted = false;
 	
 	if(levelCompleted){
 		self.levelGUI.completeLevel();
 	} else if(!imDead){
-		mazeDescriptor.status.sbe = [];
 	
 		var redirect = mazeDescriptor.status.redirect;
 		mazeDescriptor.status.redirect = null;
