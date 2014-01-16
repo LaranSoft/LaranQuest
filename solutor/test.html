@@ -5,7 +5,7 @@
 	<script src="path.js"></script>
 	<script src="space.js"></script>
 	<script src="gadgets.js"></script>
-	<script src="levels/level4.js"></script>
+	<script src="levels/level6.js"></script>
 </head>
 <body>
 	<div id="carlo"></div>
@@ -45,7 +45,7 @@
 					gadgetsPositioned[freeSpaces[elementsPosition[i]].id] = elements[i];
 				}
 				
-				var mazeDescriptor = {status: {sbe: [], visited: {}, path: []}};
+				var mazeDescriptor = {status: {sbe: [], eots: [], visited: {}, path: []}};
 				mazeDescriptor.gadgets = $.extend({}, gadgets, gadgetsPositioned);
 				
 				for(var i in spaces){
@@ -72,7 +72,8 @@
 									status.keys--;
 									
 									status.sbe.push(function(s){
-										return s.keys;
+										if(s.keys < 0) return -1;
+										return 0;
 									});
 									break;
 								}
@@ -196,6 +197,13 @@
 						levelCompleted = true;
 					}
 				}
+				
+				newPath.status.sbe = [];
+				
+				for(var i=0; i<newPath.status.eots.length; i++){
+					newPath.status.eots[i](newPath.status);
+				}
+				newPath.status.eots = [];
 				
 				if(imDead && levelCompleted) levelCompleted = false;
 		

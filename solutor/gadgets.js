@@ -161,8 +161,65 @@ KeyGadget.prototype.constructor = KeyGadget;
 KeyGadget.prototype.applyTo = function(spaceId, mazeDescriptor) {
 	
 	mazeDescriptor.status.keys = 0;
+	mazeDescriptor.status.futureKeys = 0;
 	
 	mazeDescriptor[spaceId].enterFunctions.push(function(status){
-		status.keys++;
+		status.futureKeys++;
+		
+		status.eots.push(function(s){
+			s.keys += s.futureKeys;
+			s.futureKeys = 0;
+		});
+	});
+};
+
+/******************************************************
+ * 
+ * 
+ * LIFE GADGET
+ * 
+ * 
+ ******************************************************/
+function LifeGadget(value){
+	Gadget.call(this, 'life');
+	this.value = value;
+}
+
+LifeGadget.prototype = Object.create(Gadget.prototype);
+LifeGadget.prototype.constructor = LifeGadget;
+
+LifeGadget.prototype.applyTo = function(spaceId, mazeDescriptor) {
+	mazeDescriptor.status.lifePoints = 1;
+	
+	mazeDescriptor[spaceId].enterFunctions.push(function(status){
+		status.lifePoints++;
+	});
+};
+
+/******************************************************
+ * 
+ * 
+ * DAMAGE GADGET
+ * 
+ * 
+ ******************************************************/
+function DamageGadget(value){
+	Gadget.call(this, 'damage');
+	this.value = value;
+}
+
+DamageGadget.prototype = Object.create(Gadget.prototype);
+DamageGadget.prototype.constructor = DamageGadget;
+
+DamageGadget.prototype.applyTo = function(spaceId, mazeDescriptor) {
+	
+	mazeDescriptor.status.lifePoints = 1;
+	
+	mazeDescriptor[spaceId].enterFunctions.push(function(status){
+		status.lifePoints--;
+		status.sbe.push(function(s){
+			if(s.lifePoints <= 0) return -1;
+			return 0;
+		});
 	});
 };
