@@ -15,3 +15,9 @@ if (Build.VERSION.SDK_INT >= 11){
 
 sistemare per bene il pulsante play e lo zaino
 
+il salvataggio dei dati deve essere portato sull'applicazione in modo da essere veramente persistente
+
+setup.setCacheMode(WebSettings.LOAD_NO_CACHE);
+setup.setRenderPriority(RenderPriority.HIGH);
+
+implementare la modalità di completamento del livello

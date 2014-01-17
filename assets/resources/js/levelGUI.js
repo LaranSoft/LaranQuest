@@ -21,6 +21,13 @@ function LevelGUI(options){
 			$.mobile.changePage('levelSelection.html');
 		}
 	});
+	
+	$('#resetBtn').on('click', function(){
+		if(!$('#resetBtn').hasClass('clicked')){
+			$('#resetBtn').addClass('clicked');
+			self.maze.trigger('reload');
+		}
+	});
 
 	this.reset();
 };
