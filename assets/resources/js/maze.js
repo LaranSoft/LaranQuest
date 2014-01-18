@@ -197,14 +197,18 @@ Maze.prototype.render = function(container){
 		var objectTop = (object.position[0] * caseSize);
 		var objectLeft = (object.position[1] * caseSize);
 		
-		var objectDOM = $('<img id="gadget' + object.gadget.name + '" index="' + i + '" class="positionableGadget scenicElement" src="resources/images/' + object.gadget.name + '.png"/>');
-		
+		var objectDOM = $('<div id="gadget' + object.gadget.name + '" class="positionableGadgetContainer scenicElement"/>');
 		LevelGUI.setRect(objectDOM, objectTop, objectLeft, caseSize, caseSize);
 		
 		objectDOM.on('click', function(){
-			var $el = $(this);
-			self.state == 'positioning' && self.showValidTargetsFor(self.objects[$el.attr('index')].gadget, $el);
+			var $elContainer = $(this);
+			var $el = $elContainer.children('.positionableGadget');
+			self.state == 'positioning' && self.showValidTargetsFor(self.objects[$el.attr('index')].gadget, $elContainer, $el);
 		});
+
+		var gadgetDOM = $('<img index="' + i + '" class="positionableGadget" src="resources/images/' + object.gadget.name + '.png"></img>');
+		objectDOM.append(gadgetDOM);
+		objectDOM.gadgetDOM = gadgetDOM;
 		
 		self.unplacedGadgets.total++;
 		self.unplacedGadgets[object.gadget.name] = true;
@@ -219,7 +223,7 @@ Maze.prototype.render = function(container){
 	self.trigger('start', this.statusModifier);
 };
 
-Maze.prototype.showValidTargetsFor = function(gadget, $el){
+Maze.prototype.showValidTargetsFor = function(gadget, $elContainer, $el){
 	
 	var self = this;
 	
@@ -227,6 +231,7 @@ Maze.prototype.showValidTargetsFor = function(gadget, $el){
 	self.levelGUI.setPlayButtonVisible(false);
 	
 	self.selectedGadget = $el;
+	self.selectedGadgetContainer = $elContainer;
 	
 	var callback = function(space){
 		for(var i in self.spaces){
@@ -236,9 +241,9 @@ Maze.prototype.showValidTargetsFor = function(gadget, $el){
 		
 		self.levelGUI.setGadgetSelected(self.selectedGadget, false);
 		
-		self.selectedGadget.css({
-			top: ((space.position[0] * self.caseSize) + ((self.caseSize - self.selectedGadget.width()) / 2)) + 'px',
-			left: ((space.position[1] * self.caseSize) + ((self.caseSize - self.selectedGadget.height()) / 2)) + 'px'
+		self.selectedGadgetContainer.css({
+			top: (space.position[0] * self.caseSize) + 'px',
+			left: (space.position[1] * self.caseSize) + 'px'
 		});
 		
 		space.setGadget(gadget);

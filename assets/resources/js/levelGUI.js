@@ -63,14 +63,11 @@ LevelGUI.prototype.setGadgetSelected = function(gadget, selected){
 	
 	if(selected === true){
 		if(gadget.attr('on') != '1'){
-			gadget.attr('on', '1');
-			
-			gadget.removeClass('unselected').addClass('selected');
+			gadget.attr('on', '1').removeClass('unselected').addClass('selected');
 		}
 	} else {
 		if(gadget.attr('on') == '1'){
-			gadget.attr('on', '0');
-			gadget.removeClass('selected').addClass('unselected');
+			gadget.attr('on', '0').removeClass('selected').addClass('unselected');
 		}
 	}
 	
