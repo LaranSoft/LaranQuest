@@ -47,12 +47,13 @@ Space.prototype.isPlaceable = function(gadget){
 };
 
 Space.prototype.getAdiacents = function(mazeDescriptor){
-	if(this.doors.length == 0) return this.adiacents;
+	if(this.doors.length == 0) return mazeDescriptor.adiacents[this.id];
 	
+	var adiacents = mazeDescriptor.adiacents[this.id];
 	var retVal = [];
-	for(var i=0; i<this.adiacents.length; i++){
-		if(this.doors.indexOf(this.adiacents[i]) == -1 || mazeDescriptor.status.keys > 0){
-			retVal.push(this.adiacents[i]);
+	for(var i=0; i<adiacents.length; i++){
+		if(this.doors.indexOf(adiacents[i]) == -1 || mazeDescriptor.status.keys > 0){
+			retVal.push(adiacents[i]);
 		}
 	}
 	

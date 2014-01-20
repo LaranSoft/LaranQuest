@@ -31,17 +31,27 @@ Maze.prototype.baseTriggers = {
 	},
 	'startPath': function(data){
 		this.state = 'resolving';
-
-		var mazeDescriptor = {status: {sbe: [], eots: [], visited: {}, path: [], sack: []}};
+		this.token = $('#gadgetstart');
+		var mazeDescriptor = {
+			status: {
+				sbe: [], 
+				eots: [], 
+				visited: {}, 
+				path: [], 
+				sack: []
+			},
+			adiacents: {}
+		};
 		for(var spaceId in this.spaces){
 			mazeDescriptor[spaceId] = {enterFunctions: []};
+			mazeDescriptor.adiacents[spaceId] = this.spaces[spaceId].adiacents;
 			mazeDescriptor.status.visited[spaceId] = false;
 		}
 		this.evaluateGadgets(mazeDescriptor);
 		this.evaluateDoors(mazeDescriptor);
 		
 		var startSpace = this.spaces[mazeDescriptor.start];
-		this.moveIn(startSpace, mazeDescriptor);
+		this.manageMovement(startSpace, mazeDescriptor);
 	},
 	'reload': function(data){
 		var self = this;
@@ -156,7 +166,7 @@ Maze.prototype.render = function(container){
 		if(gadget){
 			var gadgetTop = caseTop + (caseSize * (1 - expTokenPadding) / 2);
 			var gadgetLeft = caseLeft + (caseSize * (1 - expTokenPadding) / 2);
-			var $gadget = $('<img class="scenicElement" src="resources/images/' + gadget.name + '.png"/>');
+			var $gadget = $('<img id="gadget' + gadget.name + '" class="scenicElement" src="resources/images/' + gadget.name + '.png"/>');
 			LevelGUI.setRect($gadget, gadgetTop, gadgetLeft, caseSize*expTokenPadding, caseSize*expTokenPadding);
 			
 			mazeWrapper.append($gadget);
@@ -216,7 +226,6 @@ Maze.prototype.render = function(container){
 		mazeWrapper.append(objectDOM);
 	}
 	
-	self.token = $('#gadgetstart');
 	self.caseSize = caseSize;
 	//#LOG#console.log(JSON.stringify(mazeOffset));
 	
@@ -342,7 +351,7 @@ Maze.prototype.moveIn = function(space, mazeDescriptor, effect){
 		self.token.transition({
 			top: ((space.position[0] * self.caseSize) + ((self.caseSize - w) / 2)) + 'px',
 			left: ((space.position[1] * self.caseSize) + ((self.caseSize - h) / 2)) + 'px'
-		}, 300, 'easeOutCubic', function(){
+		}, 100, 'linear', function(){
 			self.manageMovement(space, mazeDescriptor);
 		});
 	} else {

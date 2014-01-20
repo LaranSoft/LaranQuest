@@ -165,6 +165,79 @@ KeyGadget.prototype.applyTo = function(space, maze, mazeDescriptor) {
 	
 	mazeDescriptor[space.id].enterFunctions.push(function(status){
 		status.sack.push('key');
-		status.keys++;
+		status.eots.push(function(s){
+			s.keys++;
+		});
+	});
+};
+
+/******************************************************
+ * 
+ * 
+ * FORCE DIRECTION GADGET
+ * 
+ * 
+ ******************************************************/
+function ForceDirectionGadget(direction){
+	Gadget.call(this, 'forceDirection' + direction);
+	this.direction = direction;
+}
+
+ForceDirectionGadget.prototype = Object.create(Gadget.prototype);
+ForceDirectionGadget.prototype.constructor = ForceDirectionGadget;
+
+ForceDirectionGadget.prototype.applyTo = function(space, maze, mazeDescriptor) {
+	mazeDescriptor.adiacents[space.id] = [space.adiacents[this.direction]];
+};
+
+/******************************************************
+ * 
+ * 
+ * LIFE GADGET
+ * 
+ * 
+ ******************************************************/
+function LifeGadget(value){
+	Gadget.call(this, 'life');
+	this.value = value;
+}
+
+LifeGadget.prototype = Object.create(Gadget.prototype);
+LifeGadget.prototype.constructor = LifeGadget;
+
+LifeGadget.prototype.applyTo = function(space, maze, mazeDescriptor) {
+	var self = this;
+	mazeDescriptor.status.lifePoints = 1;
+	
+	mazeDescriptor[space.id].enterFunctions.push(function(status){
+		status.lifePoints+=self.value;
+	});
+};
+
+/******************************************************
+ * 
+ * 
+ * DAMAGE GADGET
+ * 
+ * 
+ ******************************************************/
+function DamageGadget(value){
+	Gadget.call(this, 'damage');
+	this.value = value;
+}
+
+DamageGadget.prototype = Object.create(Gadget.prototype);
+DamageGadget.prototype.constructor = DamageGadget;
+
+DamageGadget.prototype.applyTo = function(space, maze, mazeDescriptor) {
+	var self = this;
+	mazeDescriptor.status.lifePoints = 1;
+	
+	mazeDescriptor[space.id].enterFunctions.push(function(status){
+		status.lifePoints-=self.value;;
+		status.sbe.push(function(s){
+			if(s.lifePoints <= 0) return -1;
+			return 0;
+		});
 	});
 };

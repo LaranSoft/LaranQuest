@@ -32,7 +32,9 @@ function LevelGUI(options){
 	this.reset();
 };
 
-LevelGUI.prototype.reset = function(){};
+LevelGUI.prototype.reset = function(){
+	$('#resetBtn').removeClass('clicked');
+};
 
 LevelGUI.requestAnimationFrame = function(callback) {
     return  window.requestAnimationFrame && window.requestAnimationFrame(callback)         ||

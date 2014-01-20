@@ -10,15 +10,15 @@ var level4 = new Maze({
 	    new Space(7, [2, 2], '1121', [3, 8, 0, 6]),
 	    new Space(8, [2, 3], '1011', [4, 0, 11, 7]),
 	    new Space(9, [3, 0], '1110', [5, 10, 12, 0]),
-	    new Space(10, [3, 1], '1211', [6, 0, 13, 9]),
-	    new Space(11, [3, 3], '1012', [8, 0, 15, 0], {free: false, gadget: new SealGadget()}),
+	    new Space(10, [3, 1], '1211', [6, 0, 13, 9], {free: false, gadget: new StartGadget()}),
+	    new Space(11, [3, 3], '1012', [8, 0, 15, 0]),
 	    new Space(12, [4, 0], '1100', [9, 13, 0, 0], {free: false, gadget: new SealGadget()}),
-	    new Space(13, [4, 1], '1101', [10, 14, 0, 12]),
+	    new Space(13, [4, 1], '1101', [10, 14, 0, 12], {free: false, gadget: new ForceDirectionGadget(3)}),
 	    new Space(14, [4, 2], '2101', [0, 15, 0, 13], {free: false, gadget: new SealGadget()}),
 	    new Space(15, [4, 3], '1001', [11, 0, 0, 14])
 	],
     objects: [
-  	    {gadget: new StartGadget(), position: [0, 0]},
-  	    {gadget: new ExitGadget(), position: [0, 1]}
+  	    //{gadget: new StartGadget(), position: [0, 0]},
+  	    {gadget: new ExitGadget(), position: [0, 0]}
   	]
 });

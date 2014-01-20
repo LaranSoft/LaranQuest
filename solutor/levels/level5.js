@@ -23,8 +23,8 @@ var elements = [
 var gadgets = {
 	4: new SealGadget(),
 	10: new StartGadget(),
-	11: new SealGadget(),
+	//11: new SealGadget(),
 	12: new SealGadget(),
-	13: new SealGadget(),
+	13: new SealGadget(), //!!!!! per simulare il forceDirection
 	14: new SealGadget()
 };

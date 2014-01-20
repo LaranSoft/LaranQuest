@@ -25,6 +25,7 @@
 		<script type="text/javascript" src="resources/js/image.js"></script>
 		<script type="text/javascript" src="resources/js/tutorial.js"></script>
 		<script type="text/javascript" src="resources/js/textUtils.js"></script>
+		<script type="text/javascript" src="resources/js/pathRenderer.js"></script>
 		
 		<script type="text/javascript" src="resources/js/desktopConfig.js"></script>
 		
@@ -43,7 +44,7 @@
 			</div>
 			<script>
 				$('#level').on('pageshow', function() {
-					var levelSelected = memory.load('levelSelected');
+					var levelSelected = '5'; //memory.load('levelSelected');
 					loader.loadScript('resources/js/levels/level' + levelSelected + '.js', function(){
 						var level = window['level' + levelSelected];
 						level.setLevelGUI(new LevelGUI(level.GUISettings));

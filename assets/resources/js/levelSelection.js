@@ -1,6 +1,6 @@
 var levelSelection = {
 		
-	stageCount: 5,
+	stageCount: 6,
 		
 	render: function(container, lastStage){
 		
