@@ -22,10 +22,21 @@ Space.defaultOptions = {
 
 Space.prototype.reset = function(){
 	this.removableGadget = null;
+	var gadget = this.getDOMGadget();
+	gadget && gadget.show();
 };
 
 Space.prototype.setDOMSpaceElement = function($el){
 	this.$el = $el;
+};
+
+Space.prototype.setDOMGadget = function($gadget, fixed){
+	if(fixed) this.$gadget = $gadget;
+	else this.$removableGadget = $gadget;
+};
+
+Space.prototype.getDOMGadget = function(){
+	return this.$gadget || this.$removableGadget;
 };
 
 Space.prototype.setGadget = function(gadget){
@@ -65,11 +76,11 @@ Space.prototype.setSelectable = function(selectable, callback){
 		var self = this;
 		
 		this.$el.placingTarget.show();
-		this.$el.placingTarget.plate.show().on('click', function(){
+		this.$el.placingTarget.plate.show().off('click').on('click', function(){
 			callback(self);
 		});
 	} else {
+		this.$el.placingTarget.plate.off('click').hide();
 		this.$el.placingTarget.hide();
-		this.$el.placingTarget.plate.hide().off('click');
 	}
 };

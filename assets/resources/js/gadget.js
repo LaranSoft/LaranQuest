@@ -164,7 +164,8 @@ KeyGadget.prototype.applyTo = function(space, maze, mazeDescriptor) {
 	mazeDescriptor.status.keys = 0;
 	
 	mazeDescriptor[space.id].enterFunctions.push(function(status){
-		status.sack.push('key');
+		space.getDOMGadget().hide();
+		status.sack.push(new Item('key'));
 		status.eots.push(function(s){
 			s.keys++;
 		});
@@ -210,6 +211,8 @@ LifeGadget.prototype.applyTo = function(space, maze, mazeDescriptor) {
 	mazeDescriptor.status.lifePoints = 1;
 	
 	mazeDescriptor[space.id].enterFunctions.push(function(status){
+		space.getDOMGadget().hide();
+		status.sack.push(new Item('life'));
 		status.lifePoints+=self.value;
 	});
 };
@@ -234,10 +237,15 @@ DamageGadget.prototype.applyTo = function(space, maze, mazeDescriptor) {
 	mazeDescriptor.status.lifePoints = 1;
 	
 	mazeDescriptor[space.id].enterFunctions.push(function(status){
-		status.lifePoints-=self.value;;
+		space.getDOMGadget().addClass('scaleAway');
+		status.lifePoints-=self.value;
 		status.sbe.push(function(s){
-			if(s.lifePoints <= 0) return -1;
-			return 0;
+			if(s.lifePoints <= 0) {
+				return -1;
+			} else {
+				status.usedObjects.push('life');
+				return 0;
+			}
 		});
 	});
 };

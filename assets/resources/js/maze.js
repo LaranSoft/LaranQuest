@@ -38,7 +38,8 @@ Maze.prototype.baseTriggers = {
 				eots: [], 
 				visited: {}, 
 				path: [], 
-				sack: []
+				sack: [],
+				usedObjects: []
 			},
 			adiacents: {}
 		};
@@ -168,6 +169,8 @@ Maze.prototype.render = function(container){
 			var gadgetLeft = caseLeft + (caseSize * (1 - expTokenPadding) / 2);
 			var $gadget = $('<img id="gadget' + gadget.name + '" class="scenicElement" src="resources/images/' + gadget.name + '.png"/>');
 			LevelGUI.setRect($gadget, gadgetTop, gadgetLeft, caseSize*expTokenPadding, caseSize*expTokenPadding);
+			
+			caseDescription.setDOMGadget($gadget, false);
 			
 			mazeWrapper.append($gadget);
 		}
@@ -307,9 +310,10 @@ Maze.prototype.manageMovement = function(space, mazeDescriptor){
 	var imDead = false;
 	var levelCompleted = false;
 	for(var i=0; i<mazeDescriptor.status.sbe.length; i++){
-		if(mazeDescriptor.status.sbe[i](mazeDescriptor.status) < 0){
+		var sbeOutcome = mazeDescriptor.status.sbe[i](mazeDescriptor.status);
+		if(sbeOutcome < 0){
 			imDead = true;
-		} else if(mazeDescriptor.status.sbe[i](mazeDescriptor.status) > 0){
+		} else if(sbeOutcome > 0){
 			levelCompleted = true;
 		}
 	}
@@ -319,6 +323,19 @@ Maze.prototype.manageMovement = function(space, mazeDescriptor){
 		mazeDescriptor.status.eots[i](mazeDescriptor.status);
 	}
 	mazeDescriptor.status.eots = [];
+	
+	for(var i=0; i<mazeDescriptor.status.sack.length; i++){
+		var item = mazeDescriptor.status.sack[i];
+		var itemDOM = $('<img item="' + item.name + '" class="sackItem" src="resources/images/' + item.name + '.png"></img>');
+		$('#bottom').append(itemDOM);
+	}
+	mazeDescriptor.status.sack = [];
+	
+	for(var i=0; i<mazeDescriptor.status.usedObjects.length; i++){
+		var item = mazeDescriptor.status.usedObjects[i];
+		$('[item=' + item + ']').filter(':first').remove();
+	}
+	mazeDescriptor.status.usedObjects = [];
 	
 	if(imDead && levelCompleted) levelCompleted = false;
 	
@@ -399,6 +416,8 @@ Maze.prototype.evaluateDoors = function(mazeDescriptor){
 			for(var j=0; j<self.doors.length; j++){
 				if((self.doors[j][0] == spaceId && self.doors[j][1] == lastSpaceId) ||
 						(self.doors[j][1] == spaceId && self.doors[j][0] == lastSpaceId)){
+					$('#door' + j).addClass('scaleAway');
+					status.usedObjects.push('key');
 					status.keys--;
 					break;
 				}

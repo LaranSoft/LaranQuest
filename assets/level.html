@@ -17,6 +17,7 @@
 		
 		<script type="text/javascript" src="resources/js/levelGUI.js"></script>
 		<script type="text/javascript" src="resources/js/maze.js"></script>
+		<script type="text/javascript" src="resources/js/item.js"></script>
 		<script type="text/javascript" src="resources/js/gadget.js"></script>
 		<script type="text/javascript" src="resources/js/space.js"></script>
 		<script type="text/javascript" src="resources/js/loader.js"></script>
@@ -44,7 +45,7 @@
 			</div>
 			<script>
 				$('#level').on('pageshow', function() {
-					var levelSelected = '5'; //memory.load('levelSelected');
+					var levelSelected = '6'; //memory.load('levelSelected');
 					loader.loadScript('resources/js/levels/level' + levelSelected + '.js', function(){
 						var level = window['level' + levelSelected];
 						level.setLevelGUI(new LevelGUI(level.GUISettings));

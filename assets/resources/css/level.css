@@ -148,6 +148,17 @@
   z-index: 100;
 }
 
+.sackItem {
+	height: 80%;
+	float: left;
+	position: initial;
+	/**-webkit-animation: rotating 3s linear infinite;*/
+}
+
+.scaleAway {
+	-webkit-animation: scaleAway 0.3s linear forwards;
+}
+
 .w0000 {background-image: url('../images/0000.png');}
 .w0001 {background-image: url('../images/0001.png');}
 .w0010 {background-image: url('../images/0010.png');}
@@ -233,4 +244,13 @@
 @-webkit-keyframes pulsing {
     0% {-webkit-transform: scale(1);}
     100% {-webkit-transform: scale(0.6);}
+}
+
+@-webkit-keyframes rotating {
+	0% {-webkit-transform: rotateY(0deg);}
+    100% {-webkit-transform: rotateY(360deg);}
+}
+
+@-webkit-keyframes scaleAway {
+    100% {-webkit-transform: scale(1.3); opacity: 0;}
 }
