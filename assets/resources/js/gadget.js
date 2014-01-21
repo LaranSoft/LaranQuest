@@ -249,3 +249,43 @@ DamageGadget.prototype.applyTo = function(space, maze, mazeDescriptor) {
 		});
 	});
 };
+
+/******************************************************
+ * 
+ * 
+ * BOW TRAP GADGET
+ * 
+ * 
+ ******************************************************/
+function BowTrapGadget(){
+	Gadget.call(this, 'bowTrap');
+}
+
+BowTrapGadget.prototype = Object.create(Gadget.prototype);
+BowTrapGadget.prototype.constructor = BowTrapGadget;
+
+BowTrapGadget.prototype.applyTo = function(space, maze, mazeDescriptor) {
+	var self = this;
+	mazeDescriptor.status.lifePoints = 1;
+	mazeDescriptor.status['bowTrap' + this.id] = true;
+	
+	var f = function(status){
+		if(status['bowTrap' + self.id] === true){
+			status['bowTrap' + self.id] = false;
+			status.lifePoints--;
+			status.sbe.push(function(s){
+				if(s.lifePoints <= 0) return -1;
+				return 0;
+			});
+		}
+	};
+	
+	var originalAdiacents = space.adiacents;
+	for(var i=0; i<4; i++){
+		var adiacents = originalAdiacents;
+		while(adiacents[i] != 0){
+			mazeDescriptor[adiacents[i]].enterFunctions.push(f);
+			adiacents = maze.spaces[adiacents[i]].adiacents;
+		}
+	}
+};
