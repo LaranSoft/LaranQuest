@@ -1,11 +1,12 @@
 <html>
 <head>
-	<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
-	<script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+	<script src="lib/jquery.min.js"></script>
+	
 	<script src="path.js"></script>
 	<script src="space.js"></script>
 	<script src="gadgets.js"></script>
-	<script src="levels/level4.js"></script>
+	<!-- script src="levels/level11.js"></script-->
+	<script src="proposed/level12.js"></script>
 </head>
 <body>
 	<div id="carlo"></div>
@@ -17,6 +18,18 @@
 	*/
 	var resolve = function(spaces){
 		
+		// STEP 0
+		var _elements = elements;
+		elements = [];
+		
+		for(var i in _elements){
+			for(var j in _elements[i]){
+				var gadget = _elements[i][j];
+				gadget.letter = i;
+				elements.push(gadget);
+			}
+		}
+		
 		// STEP 1
 		var elementsPosition = [];
 		for(var i=0; i<elements.length; i++){
@@ -25,27 +38,30 @@
 		elementsPosition[elements.length-1] = -1;
 		
 		var freeSpaces = [];
+		var maze = {};
 		for(var i in spaces){
 			if(!gadgets[spaces[i].id]){
 				freeSpaces.push(spaces[i]);
 			}
+			maze[spaces[i].id] = spaces[i];
 		}
+		
 		
 		// STEP 2
 		var cycle = function(){
 			elementsPosition = findElementsPosition(elements, freeSpaces, elementsPosition);
 			if(elementsPosition != null){
-				console.log('------ trying solution ------ ');
-				for(var i in elementsPosition){
-					console.log('------ ' + elements[i].name + ' in space ' + freeSpaces[elementsPosition[i]].id);
-				}
+				
+				//if(JSON.stringify(elementsPosition) == '[0,3,1]'){
+				//	console.log('bp');
+				//}
 				
 				var gadgetsPositioned = {};
 				for(var i in elementsPosition){
 					gadgetsPositioned[freeSpaces[elementsPosition[i]].id] = elements[i];
 				}
 				
-				var mazeDescriptor = {status: {sbe: [], eots: [], visited: {}, path: []}};
+				var mazeDescriptor = {status: {sbe: [], eots: [], visited: {}, path: []}, start: 0, end: 0, size: spaces.length};
 				mazeDescriptor.gadgets = $.extend({}, gadgets, gadgetsPositioned);
 				
 				for(var i in spaces){
@@ -57,7 +73,7 @@
 				}
 				
 				for(var i in mazeDescriptor.gadgets){
-					mazeDescriptor.gadgets[i].applyTo(i, mazeDescriptor);
+					mazeDescriptor.gadgets[i].applyTo(i, mazeDescriptor, maze);
 				}
 				
 				if(typeof doors != 'undefined'){
@@ -92,8 +108,29 @@
 					}
 				}
 				
+				mazeDescriptor.validStarts = [];
+				if(mazeDescriptor.start > 0) mazeDescriptor.validStarts.push(mazeDescriptor.start);
+				else {
+					for(var i in spaces){
+						if(!mazeDescriptor.gadgets[spaces[i].id]) mazeDescriptor.validStarts.push(spaces[i].id);
+					}	
+				}
+				
+				mazeDescriptor.validEnds = [];
+				if(mazeDescriptor.end > 0) mazeDescriptor.validEnds.push(mazeDescriptor.end);
+				else {
+					for(var i in spaces){
+						if(!mazeDescriptor.gadgets[spaces[i].id]) mazeDescriptor.validEnds.push(spaces[i].id);
+					}	
+				}
+				
 				var response = algorythmCycle(mazeDescriptor);
-				console.log('found ' + response.validPaths.length + ' solutions');
+				if(response.validPaths.length > 0){
+					console.log('found ' + response.validPaths.length + ' solutions while trying ');
+					for(var i in elementsPosition){
+						console.log('------ ' + elements[i].name + ' in space ' + freeSpaces[elementsPosition[i]].id);
+					}
+				}
 				response.print(document.getElementById('carlo'));
 				
 				setTimeout(cycle, 100);
@@ -103,8 +140,9 @@
 		cycle();
 	};
 	
+	var words = {};
 	var findElementsPosition = function(elements, spaces, basePosition){
-		var retVal = [];
+		var retVal = [], code = [];
 		
 		var base = spaces.length;
 		var baseNumber = 0;
@@ -117,6 +155,7 @@
 		
 		do {
 			retVal = [];
+			code = [];
 			isValid = true;
 			baseNumber++;
 			
@@ -131,6 +170,23 @@
 					break;
 				} 
 				retVal.push(value);
+			}
+			
+			if(isValid) {
+				
+				for(var i=0; i<spaces.length; i++){
+					if(retVal.indexOf(i) != -1){
+						code.push(elements[retVal.indexOf(i)].letter);
+					} else {
+						code.push('0');
+					}
+				}
+				
+				var word = code.join('');
+				isValid = !words[word];
+				if(isValid){
+					words[word] = true;
+				}
 			}
 		} while(!isValid);
 		
@@ -160,10 +216,18 @@
 		
 		var validPaths = [];
 		
-		var paths = [new Path($.extend(true, {}, mazeDescriptor.status), mazeDescriptor.start)];
+		var paths = [];
+		
+		for(var i=0; i<mazeDescriptor.validStarts.length; i++){
+			paths.push(new Path($.extend(true, {}, mazeDescriptor.status), mazeDescriptor.validStarts[i]));
+		}
 			
 		while(paths.length > 0){
 			var path = paths.pop();
+			
+			//if(JSON.stringify(path.mPath) == '[2,3,4]'){
+			//	console.log('bp');
+			//}
 			
 			var adiacents = [];
 			if(path.status.redirect){
@@ -193,8 +257,6 @@
 				for(var i=0; i<newPath.status.sbe.length; i++){
 					if(newPath.status.sbe[i](newPath.status) < 0){
 						imDead = true;
-					} else if(newPath.status.sbe[i](newPath.status) > 0){
-						levelCompleted = true;
 					}
 				}
 				
@@ -204,6 +266,8 @@
 					newPath.status.eots[i](newPath.status);
 				}
 				newPath.status.eots = [];
+				
+				levelCompleted = (newPath.status.path.length == mazeDescriptor.size && mazeDescriptor.validEnds.indexOf(newSpaceId) != -1);
 				
 				if(imDead && levelCompleted) levelCompleted = false;
 		
