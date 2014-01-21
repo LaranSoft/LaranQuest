@@ -10,17 +10,12 @@ var spaces = [
 	new Space(9, [6, 0, 0, 8])
 ];
 
-var elements = [
-	new ExitGadget(),
-	new TeleportGadget(1, false),
-	new TeleportSwitchGadget(1),
-	new LifeGadget(1)
-];
+var elements = {
+	'C': [new ForceDirectionGadget(3)],
+	'D': [new ForceDirectionGadget(0)],
+	'E': [new ForceDirectionGadget(1), new ForceDirectionGadget(1)],
+	'F': [new ForceDirectionGadget(2), new ForceDirectionGadget(2), new ForceDirectionGadget(2)]
+};
 
-var gadgets = {
-	1: new DamageGadget(),
-	3: new TeleportGadget(1, false),
-	4: new SealGadget(),
-	5: new SealGadget(),
-	8: new StartGadget()
-};	
+var gadgets = {};
+	

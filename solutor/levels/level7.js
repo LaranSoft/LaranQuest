@@ -1,81 +1,38 @@
-var adiacentsMap = {};
-	
-adiacentsMap[1] = [2, 6];
-adiacentsMap[2] = [1, 3, 7];
-adiacentsMap[3] = [2, 4]; //8
-adiacentsMap[4] = [3, 5, 9];
-adiacentsMap[5] = [4, 10];
-adiacentsMap[6] = [1, 7, 11];
-adiacentsMap[7] = [2, 6, 12]; //8
-//adiacentsMap[8] = [3, 7, 9, 13];
-adiacentsMap[9] = [4, 10, 14]; //8
-adiacentsMap[10] = [5, 9, 15];
-adiacentsMap[11] = [6, 12, 16];
-adiacentsMap[12] = [7, 11, 13, 17];
-adiacentsMap[13] = [12, 14, 18]; //8
-adiacentsMap[14] = [9, 13, 15];
-adiacentsMap[15] = [10, 14, 19];
-adiacentsMap[16] = [11, 17, 20];
-adiacentsMap[17] = [12, 16, 18, 21];
-adiacentsMap[18] = [13, 17, 22];
-adiacentsMap[19] = [15, 23];
-adiacentsMap[20] = [16, 21];
-adiacentsMap[21] = [17, 20, 22];
-adiacentsMap[22] = [18, 21];
-adiacentsMap[23] = [19];
+var spaces = [
+	new Space(1, [0, 2, 6, 0]),
+	new Space(2, [0, 3, 7, 1]),
+	new Space(3, [0, 4, 0, 2]),
+	new Space(4, [0, 5, 8, 3]),
+	new Space(5, [0, 9, 4, 0]),
+	new Space(6, [1, 7, 10, 0]),
+	new Space(7, [2, 0, 11, 6]),
+	new Space(8, [4, 9, 13, 0]),
+	new Space(9, [5, 0, 14, 8]),
+	new Space(10, [6, 11, 15, 0]),
+	new Space(11, [7, 12, 16, 10]),
+	new Space(12, [0, 13, 17, 11]),
+	new Space(13, [8, 14, 0, 12]),
+	new Space(14, [9, 0, 18, 13]),
+	new Space(15, [10, 16, 19, 0]),
+	new Space(16, [11, 17, 20, 15]),
+	new Space(17, [12, 0, 21, 16]),
+	new Space(18, [14, 0, 22, 0]),
+	new Space(19, [15, 20, 0, 0]),
+	new Space(20, [16, 21, 0, 19]),
+	new Space(21, [17, 0, 0, 20]),
+	new Space(22, [18, 0, 0, 0])
+];
 
-var doubleTrap = function(status, enteringDirection, exitingDirection){
-	if(status.trap1 == null){
-		status.trap1 = 'disinnescata';
-		status.lifePoints--;
-	}
-	if(status.trap2 == null){
-		status.trap2 = 'disinnescata';
-		status.lifePoints--;
-	}
-	return status.lifePoints > 0;
+var elements = [
+    new TeleportGadget(1),
+	new TeleportGadget(1),
+	new StartGadget()
+];
+
+var gadgets = {
+	1: new LifeGadget(1),
+	9: new LifeGadget(1),
+	11: new BowTrapGadget(),
+	16: new ExitGadget(),
+	20: new BowTrapGadget()	
 };
-
-var trap1 = function(status, enteringDirection, exitingDirection){
-	if(status.trap1 == null){
-		status.trap1 = 'disinnescata';
-		status.lifePoints--;
-	}
-	return status.lifePoints > 0;
-};
-
-var trap2 = function(status, enteringDirection, exitingDirection){
-	if(status.trap2 == null){
-		status.trap2 = 'disinnescata';
-		status.lifePoints--;
-	}
-	return status.lifePoints > 0;
-};
-
-var spaces = [];
-spaces.push({id: 1, star: true, onEnter: function(status, enteringDirection, exitingDirection){status.lifePoints++; return true;}});
-spaces.push({id: 2, onEnter: doubleTrap});
-spaces.push({id: 3});
-spaces.push({id: 4});
-spaces.push({id: 5});
-spaces.push({id: 6});
-spaces.push({id: 7, onEnter: doubleTrap});
-//spaces.push({id: 8});
-spaces.push({id: 9});
-spaces.push({id: 10, star: true, onEnter: function(status, enteringDirection, exitingDirection){status.lifePoints++; return true;}});
-spaces.push({id: 11, onEnter: trap1});
-spaces.push({id: 12, star: true, onEnter: doubleTrap});
-spaces.push({id: 13, onEnter: trap1});
-spaces.push({id: 14, onEnter: trap1});
-spaces.push({id: 15, onEnter: trap1});
-spaces.push({id: 16});
-spaces.push({id: 17, star: true, end: true, onEnter: doubleTrap});
-spaces.push({id: 18});
-spaces.push({id: 19});
-spaces.push({id: 20, onEnter: trap2});
-spaces.push({id: 21, star: true, onEnter: doubleTrap});
-spaces.push({id: 22, onEnter: trap2});
-spaces.push({id: 23});
-
-var elements = [{name: 'teleport', value: 't1'}, {name: 'teleport', value: 't1'}];
-	
