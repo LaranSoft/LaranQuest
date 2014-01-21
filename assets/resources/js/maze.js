@@ -58,7 +58,7 @@ Maze.prototype.baseTriggers = {
 		var self = this;
 		$('#level').effect('fade', 200, function(){
 			$('#level').show();
-			self.$container.html('');
+			self.$container.empty();
 			for(var spaceId in self.spaces) self.spaces[spaceId].reset();
 			self.render(self.$container, self.statusModifier);
 			self.levelGUI.reset();
@@ -224,7 +224,7 @@ Maze.prototype.render = function(container){
 		objectDOM.gadgetDOM = gadgetDOM;
 		
 		self.unplacedGadgets.total++;
-		self.unplacedGadgets[object.gadget.name] = true;
+		self.unplacedGadgets[object.gadget.id] = true;
 		
 		mazeWrapper.append(objectDOM);
 	}
@@ -260,9 +260,9 @@ Maze.prototype.showValidTargetsFor = function(gadget, $elContainer, $el){
 		
 		space.setGadget(gadget);
 		
-		if(self.unplacedGadgets[gadget.name] == true){
+		if(self.unplacedGadgets[gadget.id] == true){
 			self.unplacedGadgets.total--;
-			self.unplacedGadgets[gadget.name] = false;
+			self.unplacedGadgets[gadget.id] = false;
 		}
 		self.levelGUI.setPlayButtonVisible(self.unplacedGadgets.total <= 0);
 	};
