@@ -3,7 +3,7 @@ var spaces = [
 	new Space(2, [0, 3, 7, 1]),
 	new Space(3, [0, 4, 0, 2]),
 	new Space(4, [0, 5, 8, 3]),
-	new Space(5, [0, 9, 4, 0]),
+	new Space(5, [0, 0, 9, 4]),
 	new Space(6, [1, 7, 10, 0]),
 	new Space(7, [2, 0, 11, 6]),
 	new Space(8, [4, 9, 13, 0]),
