@@ -286,9 +286,14 @@ BowTrapGadget.prototype.applyTo = function(space, maze, mazeDescriptor) {
 		if(status['bowTrap' + self.id] === true){
 			status['bowTrap' + self.id] = false;
 			status.lifePoints--;
+			space.getDOMGadget().addClass('scaleAway');
 			status.sbe.push(function(s){
-				if(s.lifePoints <= 0) return -1;
-				return 0;
+				if(s.lifePoints <= 0){
+					return -1;
+				} else {
+					status.usedObjects.push('life');
+					return 0;
+				}
 			});
 		}
 	};
