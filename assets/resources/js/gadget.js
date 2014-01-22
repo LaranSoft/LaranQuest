@@ -7,6 +7,8 @@ Gadget.nextId = 0;
 
 Gadget.prototype.applyTo = function(space, maze, mazeDescriptor) {}
 
+Gadget.prototype.canBePlacedIn = function(space, maze) {return true;} 
+
 
 
 /******************************************************
@@ -92,6 +94,17 @@ function TeleportGadget(teleportId, enabled){
 TeleportGadget.prototype = Object.create(Gadget.prototype);
 TeleportGadget.prototype.constructor = TeleportGadget;
 
+TeleportGadget.prototype.canBePlacedIn = function(space, maze) {
+	var adiacents = space.getAdiacents();
+	for(var i=0; i<adiacents.length; i++){
+		if(adiacents[i] != 0){
+			var gadget = maze.spaces[adiacents[i]].getGadget();
+			if(gadget && gadget.name == 'teleport' + this.teleportId) return false;
+		}
+	}
+	return true;
+};
+
 TeleportGadget.prototype.applyTo = function(space, maze, mazeDescriptor) {
 	var self = this;
 	
@@ -100,7 +113,7 @@ TeleportGadget.prototype.applyTo = function(space, maze, mazeDescriptor) {
 	for(var i in maze.spaces){
 		if(i != space.id){
 			var gadget = maze.spaces[i].getGadget();
-			if(gadget && (gadget.teleportId == this.teleportId)){
+			if(gadget && gadget.name == 'teleport' + this.teleportId){
 				destinationIndex = i; break;
 			}
 		}

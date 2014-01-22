@@ -139,13 +139,12 @@ LevelGUI.prototype.completeLevel = function(){
 	
 	self.playButton.hide();
 	
-	//$.mobile.changePage('levelSelection.html');
-	//window['level' + levelSelected] = null;
-	//loader.unloadScript('resources/js/levels/level' + levelSelected + '.js');
-	
-	var okButton = $('<a id="nextLevelBtn" class="levelSummaryElement" href="levelSelection.html" data-role="button" data-theme="a">Next</a>');
-	$('#bottom').append(okButton);
-	okButton.button();
+	$('#controlButtonsContainer').show();
+	$('#menuBtn').on('click', function(){
+		window['level' + levelSelected] = null;
+		loader.unloadScript('resources/js/levels/level' + levelSelected + '.js');
+		$.mobile.changePage('levelSelection.html');
+	});
 };
 
 LevelGUI.setRect = function($el, top, left, width, height){

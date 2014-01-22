@@ -35,6 +35,7 @@
 #bottom {
 	height: 12%;
 	bottom: 0px;
+	text-align: center;
 }
 
 .menuBtn {
@@ -131,9 +132,19 @@
 #playButton.animateHide {-webkit-animation: animateHide 0.3s linear forwards;}
 
 #nextLevelBtn {
-	width: 80px;
 	margin: 0 auto;
 	background-image: linear-gradient(#f1a165, #f36d0a);
+	width: 30%;
+	height: 80%;
+	border-radius: 20px;
+	text-align: center;
+	margin: 0 auto;
+	background-image: linear-gradient(#f1a165, #f36d0a);
+}
+
+#controlButtonsContainer {
+	display: none;
+	margin: 0;
 }
 
 .token.exp {
@@ -158,6 +169,8 @@
 .scaleAway {
 	-webkit-animation: scaleAway 0.3s linear forwards;
 }
+
+.positioning {z-index: 500;}
 
 .w0000 {background-image: url('../images/0000.png');}
 .w0001 {background-image: url('../images/0001.png');}

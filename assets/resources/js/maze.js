@@ -170,7 +170,7 @@ Maze.prototype.render = function(container){
 			var $gadget = $('<img id="gadget' + gadget.name + '" class="scenicElement" src="resources/images/' + gadget.name + '.png"/>');
 			LevelGUI.setRect($gadget, gadgetTop, gadgetLeft, caseSize*expTokenPadding, caseSize*expTokenPadding);
 			
-			caseDescription.setDOMGadget($gadget, false);
+			caseDescription.setDOMGadget($gadget, true);
 			
 			mazeWrapper.append($gadget);
 		}
@@ -239,38 +239,64 @@ Maze.prototype.showValidTargetsFor = function(gadget, $elContainer, $el){
 	
 	var self = this;
 	
-	self.levelGUI.setGadgetSelected(self.selectedGadget, false);
-	self.levelGUI.setPlayButtonVisible(false);
-	
-	self.selectedGadget = $el;
-	self.selectedGadgetContainer = $elContainer;
-	
-	var callback = function(space){
-		for(var i in self.spaces){
-			self.spaces[i].setSelectable(false);
-			self.spaces[i].removeGadget(gadget);
-		}
-		
-		self.levelGUI.setGadgetSelected(self.selectedGadget, false);
-		
-		self.selectedGadgetContainer.css({
-			top: (space.position[0] * self.caseSize) + 'px',
-			left: (space.position[1] * self.caseSize) + 'px'
-		});
-		
-		space.setGadget(gadget);
-		
-		if(self.unplacedGadgets[gadget.id] == true){
-			self.unplacedGadgets.total--;
-			self.unplacedGadgets[gadget.id] = false;
-		}
+	if(self.selectedGadget && self.selectedGadget.id == gadget.id){
+		self.levelGUI.setGadgetSelected(self.selectedDOMGadget, false);
 		self.levelGUI.setPlayButtonVisible(self.unplacedGadgets.total <= 0);
-	};
-	
-	self.levelGUI.setGadgetSelected($el, true);
-	
-	for(var i in this.spaces){
-		this.spaces[i].setSelectable(this.spaces[i].isPlaceable(gadget.name), callback);
+		self.selectedGadgetContainer.removeClass('positioning');
+		self.selectedGadget = null;
+		self.selectedDOMGadget = null;
+		self.selectedGadgetContainer = null;
+		for(var i in this.spaces){
+			this.spaces[i].setSelectable(false);
+			self.oldGadgetSpace === i && (this.spaces[i].setGadget(gadget));
+		}
+	} else {
+		
+		self.levelGUI.setGadgetSelected(self.selectedDOMGadget, false);
+		self.levelGUI.setPlayButtonVisible(false);
+		
+		self.selectedGadget = gadget;
+		self.selectedDOMGadget = $el;
+		self.selectedGadgetContainer = $elContainer;
+		self.selectedGadgetContainer.addClass('positioning');
+		
+		for(var i in self.spaces){
+			self.spaces[i].removeGadget(gadget) && (self.oldGadgetSpace = i);
+		}
+		
+		var callback = function(space){
+			for(var i in self.spaces){
+				self.spaces[i].setSelectable(false);
+				self.spaces[i].removeGadget(gadget);
+			}
+			
+			self.levelGUI.setGadgetSelected(self.selectedDOMGadget, false);
+			
+			self.selectedGadgetContainer.removeClass('positioning').css({
+				top: (space.position[0] * self.caseSize) + 'px',
+				left: (space.position[1] * self.caseSize) + 'px'
+			});
+			
+			space.setGadget(gadget);
+			space.setDOMGadget($el, false);
+			
+			if(self.unplacedGadgets[gadget.id] == true){
+				self.unplacedGadgets.total--;
+				self.unplacedGadgets[gadget.id] = false;
+			}
+			self.levelGUI.setPlayButtonVisible(self.unplacedGadgets.total <= 0);
+			
+			self.selectedGadget = null;
+			self.selectedDOMGadget = null;
+			self.selectedGadgetContainer = null;
+			self.oldGadgetSpace = null;
+		};
+		
+		self.levelGUI.setGadgetSelected(self.selectedDOMGadget, true);
+		
+		for(var i in this.spaces){
+			this.spaces[i].setSelectable(this.spaces[i].isPlaceable(gadget, self), callback);
+		}
 	}
 };
 

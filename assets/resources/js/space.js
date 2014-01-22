@@ -50,14 +50,22 @@ Space.prototype.getGadget = function(){
 Space.prototype.removeGadget = function(gadget){
 	if(this.removableGadget && this.removableGadget.id == gadget.id){
 		this.removableGadget = null;
+		return true;
 	};
+	return false;
 };
 
-Space.prototype.isPlaceable = function(gadget){
-	return (this.free != (this.exceptions.indexOf(gadget) != -1)) && !this.fixedGadget && !this.removableGadget;
+Space.prototype.isPlaceable = function(gadget, maze){
+	if(!this.free) return false;
+	if(this.exceptions.indexOf(gadget.name) != -1) return false;
+	if(this.fixedGadget) return false;
+	if(this.removableGadget) return false;
+	
+	return gadget.canBePlacedIn(this, maze);
 };
 
 Space.prototype.getAdiacents = function(mazeDescriptor){
+	if(!mazeDescriptor) return this.adiacents;
 	if(this.doors.length == 0) return mazeDescriptor.adiacents[this.id];
 	
 	var adiacents = mazeDescriptor.adiacents[this.id];
