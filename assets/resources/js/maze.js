@@ -386,17 +386,28 @@ Maze.prototype.manageMovement = function(space, mazeDescriptor){
 
 Maze.prototype.moveIn = function(space, mazeDescriptor, effect){
 	var self = this;
-	
-	var w = self.token.width();
-	var h = self.token.height();
-	
+
 	if(!effect){
-		self.token.transition({
-			top: ((space.position[0] * self.caseSize) + ((self.caseSize - w) / 2)) + 'px',
-			left: ((space.position[1] * self.caseSize) + ((self.caseSize - h) / 2)) + 'px'
-		}, 100, 'linear', function(){
+
+		var oldSpace = self.token.oldSpace || mazeDescriptor.start;
+		var direction = self.getDirection(oldSpace, space.id);
+		
+		var isBackwardStep = direction == 0 || direction == 3;
+		var isVerticalStep = direction == 0 || direction == 2;
+		
+		var change = {}, prefix = '+', property = 'x';
+		
+		if(isBackwardStep) prefix = '-';
+		
+		if(isVerticalStep) property = 'y';
+		
+		change[property] = prefix + '=' + self.caseSize + 'px';
+		
+		self.token.transition(change, 100, 'linear', function(){
 			self.manageMovement(space, mazeDescriptor);
 		});
+		
+		self.token.oldSpace = space.id;
 	} else {
 		self.token.fadeOut(300, function(){
 			self.token.css({
@@ -413,11 +424,11 @@ Maze.prototype.showAdiacentsFor = function(space, mazeDescriptor){
 	var self = this;
 	var pathClosed = true;
 	var adiacents = space.getAdiacents(mazeDescriptor);
-	for(var i=0; i<adiacents.length; i++){
-		var adiacentId = adiacents[i];
+	for(var direction=0; direction<adiacents.length; direction++){
+		var adiacentId = adiacents[direction];
 		if(adiacentId != 0 && !mazeDescriptor.status.visited[adiacentId]){
 			pathClosed = false;
-			this.spaces[adiacents[i]].setSelectable(true, function(space){
+			this.spaces[adiacentId].setSelectable(true, function(space){
 				self.moveIn(space, mazeDescriptor);
 			});
 		}
