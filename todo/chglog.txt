@@ -1,0 +1,30 @@
+level.html
+	rev 63 -> introduce i bottoni in stile jquery mobile al completamento del livello
+	rev 48
+	
+gadget.js
+	rev 63 -> introduce la logica del canBePlacedIn
+	rev 58
+	
+loader.js
+	rev 63 -> introdotta la funzione unloadScript
+	rev 16
+	
+space.js
+	rev 63 -> modificata la logica del 'isPlaceable(gadget)'
+	rev 48
+	
+levelGUI.js
+	rev 63 -> modificata la funzione onCompleteLevel
+	rev 56
+	
+maze.js
+	rev 63 -> introdotta la gestione dell'unselect di un gadget in stato di positioning
+	rev 57
+	
+level9.js
+	rev 63 -> (NEW) nuovo livello
+
+level.css
+	rev 63 -> introdotta la classe positioning per la gestione dei gadgets
+	rev 59
