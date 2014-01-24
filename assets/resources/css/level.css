@@ -97,12 +97,6 @@
 }
 
 .positionableGadget {
-	position: relative;
-	top: 20%;
-	left: 20%;
-	width: 60%;
-	height: 60%;
-	
     -webkit-backface-visibility: hidden;
     -webkit-perspective: 1000;
 }

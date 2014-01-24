@@ -22,9 +22,11 @@ var elements = {
 };
 
 var gadgets = {
+	2: new ForceDirectionGadget(1),
 	6: new KeyGadget(),
 	11: new LifeGadget(1),
-	13: new BowTrapGadget()
+	12: new BowTrapGadget(),
+	15: new SealGadget()
 };
 
 var doors = [

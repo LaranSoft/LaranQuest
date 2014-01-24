@@ -39,7 +39,7 @@ var pathRenderer = {
 			
 			if(direction == -1){
 				
-				var position = maze.spaces[path[path.length-2]].position;
+				var position = maze.spaces[path[path.length-1]].position;
 				this._beginSegment(position, caseSize, container);
 				
 			} else {

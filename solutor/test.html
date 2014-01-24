@@ -221,8 +221,33 @@
 		
 		var paths = [];
 		
-		for(var i=0; i<mazeDescriptor.validStarts.length; i++){
-			paths.push(new Path($.extend(true, {}, mazeDescriptor.status), mazeDescriptor.validStarts[i]));
+		for(var index=0; index<mazeDescriptor.validStarts.length; index++){
+			var newSpaceId = mazeDescriptor.validStarts[index];
+			var newPath = new Path($.extend(true, {}, mazeDescriptor.status), newSpaceId);
+			
+			var enterFunctions = mazeDescriptor[newSpaceId].enterFunctions;
+			for(var i=0; i<enterFunctions.length; i++){
+				enterFunctions[i](newPath.status);
+			}
+			
+			var imDead = false;
+			
+			for(var i=0; i<newPath.status.sbe.length; i++){
+				if(newPath.status.sbe[i](newPath.status) < 0){
+					imDead = true;
+				}
+			}
+			
+			newPath.status.sbe = [];
+			
+			for(var i=0; i<newPath.status.eots.length; i++){
+				newPath.status.eots[i](newPath.status);
+			}
+			newPath.status.eots = [];
+			
+			if(!imDead) {
+				paths.push(newPath);
+			}
 		}
 			
 		while(paths.length > 0){

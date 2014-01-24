@@ -104,7 +104,7 @@ var levelSelection = {
 			'scale': 3, 
 			'opacity': 0, 
 			'z-index': 100,
-			'delay': 500
+			'delay': 200
 		}, 600, function(){
 			toUnlock.remove();
 			$('[toActivate=1]').addClass('active');

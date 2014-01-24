@@ -28,12 +28,40 @@ function LevelGUI(options){
 			self.maze.trigger('reload');
 		}
 	});
+	
+	$('#resetCtrlBtn').on('click', function(){
+		self.maze.trigger('reload');
+	});
+	
+	$('#menuCtrlBtn').on('click', function(){
+		var levelSelected = Number(memory.load('levelSelected'));
+		window['level' + levelSelected] = null;
+		loader.unloadScript('resources/js/levels/level' + levelSelected + '.js');
+		$.mobile.changePage('levelSelection.html');
+	});
+	
+	$('#nextCtrlBtn').on('click', function(){
+		self.reset();
+		var levelSelected = Number(memory.load('levelSelected'));
+		window['level' + levelSelected] = null;
+		loader.unloadScript('resources/js/levels/level' + levelSelected + '.js');
+		levelSelected++;
+		memory.save('levelSelected', levelSelected);
+		$('#middle').empty();
+		loader.loadScript('resources/js/levels/level' + levelSelected + '.js', function(){
+			var level = window['level' + levelSelected];
+			level.setLevelGUI(self);
+			level.render($('#middle'), level.statusModifier);
+		});
+	});
 
 	this.reset();
 };
 
 LevelGUI.prototype.reset = function(){
 	$('#resetBtn').removeClass('clicked');
+	$('#controlButtonsContainer').hide();
+	this.setPlayButtonVisible(false);
 };
 
 LevelGUI.requestAnimationFrame = function(callback) {
@@ -57,14 +85,13 @@ LevelGUI.prototype.setGadgetSelected = function(gadget, selected){
 	
 	if(selected === true){
 		if(gadget.attr('on') != '1'){
-			gadget.attr('on', '1').removeClass('unselected').addClass('selected');
+			gadget.attr('on', '1').transition({scale: 1.3}, 200, 'ease-out');
 		}
 	} else {
 		if(gadget.attr('on') == '1'){
-			gadget.attr('on', '0').removeClass('selected').addClass('unselected');
+			gadget.attr('on', '0').transition({scale: 1}, 200, 'ease-out');
 		}
 	}
-	
 }
 
 LevelGUI.prototype.setPlayButtonVisible = function(visible){
@@ -137,14 +164,9 @@ LevelGUI.prototype.completeLevel = function(){
 		memory.save('lastStage', lastStage+1);
 	}
 	
-	self.playButton.hide();
+	self.setPlayButtonVisible(false);
 	
 	$('#controlButtonsContainer').show();
-	$('#menuBtn').on('click', function(){
-		window['level' + levelSelected] = null;
-		loader.unloadScript('resources/js/levels/level' + levelSelected + '.js');
-		$.mobile.changePage('levelSelection.html');
-	});
 };
 
 LevelGUI.setRect = function($el, top, left, width, height){

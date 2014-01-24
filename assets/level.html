@@ -42,15 +42,16 @@
 			<div id="middle"></div>
 			<div id="bottom">
 				<div id="playButton"></div>
-				<div id="controlButtonsContainer" data-role="controlgroup" data-type="horizontal" data-theme="a">
-					<button id="menuBtn">Menu</button>
-					<button>Replay</button>
-					<button>Next</button>
+				<div id="controlButtonsContainer" data-role="controlgroup" data-type="horizontal" data-theme="c">
+					<button id="menuCtrlBtn">Menu</button>
+					<button id="resetCtrlBtn">Replay</button>
+					<button id="nextCtrlBtn">Next</button>
 				</div>
 			</div>
 			<script>
 				$('#level').on('pageshow', function() {
 					var levelSelected = '1'; //memory.load('levelSelected');
+					$('#middle').empty();
 					loader.loadScript('resources/js/levels/level' + levelSelected + '.js', function(){
 						var level = window['level' + levelSelected];
 						level.setLevelGUI(new LevelGUI(level.GUISettings));
