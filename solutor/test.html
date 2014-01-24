@@ -6,7 +6,7 @@
 	<script src="space.js"></script>
 	<script src="gadgets.js"></script>
 	<!-- script src="levels/level11.js"></script-->
-	<script src="proposed/level12.js"></script>
+	<script src="proposed/level13.js"></script>
 </head>
 <body>
 	<div id="carlo"></div>
@@ -21,8 +21,10 @@
 		// STEP 0
 		var _elements = elements;
 		elements = [];
+		var atLeastOneElement = false;
 		
 		for(var i in _elements){
+			atLeastOneElement = true;
 			for(var j in _elements[i]){
 				var gadget = _elements[i][j];
 				gadget.letter = i;
@@ -50,7 +52,8 @@
 		// STEP 2
 		var cycle = function(){
 			elementsPosition = findElementsPosition(elements, freeSpaces, elementsPosition);
-			if(elementsPosition != null){
+			if(atLeastOneElement === false || elementsPosition != null){
+				atLeastOneElement = true;
 				
 				//if(JSON.stringify(elementsPosition) == '[0,3,1]'){
 				//	console.log('bp');

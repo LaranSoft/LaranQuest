@@ -1,3 +1,5 @@
+// stadio creato da Alessio
+
 var spaces = [
 	new Space(1, [0, 2, 5, 0]),
 	new Space(2, [0, 3, 6, 1]),
